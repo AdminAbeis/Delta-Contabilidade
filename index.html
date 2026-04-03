@@ -51,6 +51,102 @@
   .leg-item{display:flex;align-items:center;gap:4px}
   .leg-dot{width:8px;height:8px;border-radius:2px}
 
+  /* ═══════════════════════════════════════════════════════════
+     GLOBAL TOOLTIP — rendered at <body> level, escapes overflow:hidden
+     
+     BUG FIX: Never set style.opacity in JS — inline styles override CSS classes.
+     Instead: use style.visibility for measurement, CSS class for animation.
+     
+     ARROW FIX: Rotated square div with box-shadow instead of border-trick,
+     so it's visible against both light and dark backgrounds.
+  ═══════════════════════════════════════════════════════════ */
+  #gtip {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    background: #1e293b;
+    color: #e2e8f0;
+    border-radius: 10px;
+    /* Arrow lives outside the border-radius, so overflow must be visible */
+    overflow: visible;
+    padding: 12px 14px;
+    min-width: 215px;
+    max-width: 290px;
+    font-family: var(--sans);
+    font-size: 11.5px;
+    line-height: 1.6;
+    box-shadow: 0 16px 48px rgba(0,0,0,.55), 0 4px 12px rgba(0,0,0,.25);
+    border: 1px solid rgba(255,255,255,.12);
+    /* Only opacity & transform are animated — no inline style ever touches these */
+    opacity: 0;
+    transform: translateY(5px);
+    transition: opacity .17s ease, transform .17s ease;
+    display: none;  /* toggled by JS, not by class */
+  }
+  #gtip.tip-show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Arrow: a rotated square that pokes out of the tooltip box.
+     Positioned by JS. Uses box-shadow to stay visible on dark backgrounds. */
+  #gtip-arr {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,.12);
+    transform: rotate(45deg);
+    /* Direction-specific shadows set by JS class */
+  }
+  #gtip-arr.arr-down {
+    bottom: -7px;
+    /* Shadow on bottom-right edge = visible when over dark bg */
+    box-shadow: 3px 3px 6px rgba(0,0,0,.35);
+    /* Hide top-left edge (inside tooltip) with clip */
+    clip-path: polygon(50% 50%, 100% 50%, 100% 100%, 50% 100%);
+  }
+  #gtip-arr.arr-up {
+    top: -7px;
+    box-shadow: -2px -2px 5px rgba(0,0,0,.3);
+    clip-path: polygon(0 0, 50% 0, 50% 50%, 0 50%);
+  }
+
+  /* "?" indicator on hoverable cells */
+  .has-tip { cursor: help; position: relative; }
+  .has-tip .tip-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 13px; height: 13px; border-radius: 50%;
+    background: rgba(37,99,168,.15); color: var(--blue);
+    font-size: 8px; font-weight: 700; font-family: var(--sans);
+    margin-left: 4px; vertical-align: middle; flex-shrink: 0;
+    border: 1px solid rgba(37,99,168,.2);
+    transition: background .15s;
+  }
+  .alloc-cell.has-tip .tip-badge {
+    background: rgba(255,255,255,.15); color: rgba(255,255,255,.7);
+    border-color: rgba(255,255,255,.2);
+  }
+  .has-tip:hover .tip-badge, .has-tip.tip-active .tip-badge {
+    background: var(--blue); color: white; border-color: var(--blue);
+  }
+  .alloc-cell.has-tip:hover .tip-badge, .alloc-cell.has-tip.tip-active .tip-badge {
+    background: rgba(255,255,255,.9); color: var(--navy); border-color: transparent;
+  }
+  .has-tip.tip-active { outline: 2px solid #38bdf8; outline-offset: 1px; border-radius: 3px; }
+
+  /* Tooltip inner */
+  .tip-title{font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:7px;display:flex;align-items:center;gap:5px}
+  .tip-icon{font-size:12px}
+  .tip-line{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:2px}
+  .tip-label{color:#94a3b8;font-size:10px}
+  .tip-val{font-family:var(--mono);font-size:11px;color:#e2e8f0;font-weight:600;white-space:nowrap}
+  .tip-divider{border:none;border-top:1px solid rgba(255,255,255,.1);margin:7px 0}
+  .tip-formula{font-family:var(--mono);font-size:11px;color:#7dd3fc;margin-top:4px;line-height:1.5}
+  .tip-result{font-family:var(--mono);font-size:15px;font-weight:700;color:#bef264;margin-top:3px}
+  .tip-direto{font-size:11px;color:#86efac;font-style:italic;margin-top:4px}
+  .tip-note{font-size:10px;color:#64748b;margin-top:6px;font-style:italic;line-height:1.4;border-top:1px solid rgba(255,255,255,.06);padding-top:5px}
+
   /* MAIN */
   main{max-width:1200px;margin:0 auto;padding:20px 16px 60px;display:flex;flex-direction:column;gap:16px}
   .item-card.search-hidden{display:none}
@@ -65,71 +161,37 @@
   .card-title{font-size:13px;font-weight:700;letter-spacing:.01em;line-height:1.3}
   .card-fato{font-size:10.5px;opacity:.72;font-weight:300;margin-top:3px;font-style:italic;line-height:1.4}
 
-  /* ── RATEIO SECTION
-     FIX: max-height was 200px → content clipped on mobile when grid wraps
-     into 4+ rows. Using 800px covers all possible wrapping scenarios.
-  */
+  /* RATEIO — max-height:800px prevents mobile clipping */
   .rateio-section{border-bottom:1px solid var(--border);overflow:hidden;transition:max-height .38s ease,opacity .25s ease;max-height:800px;opacity:1}
   body.hide-R .rateio-section{max-height:0!important;opacity:0;overflow:hidden}
 
   .rateio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));border-bottom:1px solid var(--border)}
-  .rg-cell{padding:8px 12px;border-right:1px solid var(--border);font-size:10.5px}
+  .rg-cell{padding:8px 12px;border-right:1px solid var(--border);font-size:10.5px;display:flex;flex-direction:column}
   .rg-cell:last-child{border-right:none}
-  .rg-label{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;margin-bottom:3px}
+  .rg-label{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9ca3af;margin-bottom:3px;display:flex;align-items:center}
   .rg-val{font-family:var(--mono);font-weight:600;color:var(--navy);font-size:12px}
   .rg-val.money::before{content:'R$ ';font-size:9px;font-weight:400}
   .rg-val.criterio{color:var(--blue)}
   .rg-val.mes{font-family:var(--sans);font-size:10px;font-weight:400}
-  .rg-val.muted{color:#cbd5e1;font-weight:400}  /* shown but dimmed when value=1 */
+  .rg-val.muted{color:#cbd5e1;font-weight:400}
 
   /* ALLOC ROW */
   .alloc-row{display:flex;align-items:stretch}
-  .alloc-cell{flex:1;padding:8px 12px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:2px;position:relative;cursor:default}
+  .alloc-cell{flex:1;padding:8px 12px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:3px}
   .alloc-cell:last-child{border-right:none}
-  .alloc-label{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+  .alloc-label{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;display:flex;align-items:center}
   .alloc-val{font-family:var(--mono);font-size:12.5px;font-weight:600}
   .alloc-adm{background:var(--adm-lt)}.alloc-adm .alloc-label{color:var(--adm)}.alloc-adm .alloc-val{color:var(--adm)}
   .alloc-vend{background:var(--vend-lt)}.alloc-vend .alloc-label{color:var(--vend)}.alloc-vend .alloc-val{color:var(--vend)}
   .alloc-ind{background:var(--ind-lt)}.alloc-ind .alloc-label{color:var(--ind)}.alloc-ind .alloc-val{color:var(--ind)}
 
-  /* TOOLTIP BALLOON */
-  .calc-tip{
-    position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);
-    background:#1e293b;color:#e2e8f0;border-radius:8px;padding:10px 13px;
-    min-width:200px;max-width:270px;font-family:var(--sans);font-size:11px;line-height:1.55;
-    box-shadow:0 8px 24px rgba(0,0,0,.4);
-    opacity:0;transition:opacity .18s,transform .18s;pointer-events:none;z-index:50;
-    white-space:normal;text-align:left;
-  }
-  .calc-tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1e293b}
-  /* edge adjustments */
-  .alloc-cell:first-child .calc-tip{left:0;right:auto;transform:translateY(4px)}
-  .alloc-cell:first-child .calc-tip::after{left:18px;right:auto;transform:none}
-  .alloc-cell:last-child .calc-tip{left:auto;right:0;transform:translateY(4px)}
-  .alloc-cell:last-child .calc-tip::after{left:auto;right:18px;transform:none}
-  /* show on hover */
-  .alloc-cell:hover .calc-tip{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
-  .alloc-cell:first-child:hover .calc-tip,.alloc-cell:last-child:hover .calc-tip{opacity:1;transform:translateY(0);pointer-events:auto}
-
-  .tip-title{font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;margin-bottom:6px}
-  .tip-line{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
-  .tip-label{color:#94a3b8;font-size:10px}
-  .tip-val{font-family:var(--mono);font-size:11px;color:#e2e8f0;font-weight:600;white-space:nowrap}
-  .tip-divider{border:none;border-top:1px solid rgba(255,255,255,.1);margin:5px 0}
-  .tip-formula{font-family:var(--mono);font-size:10px;color:#7dd3fc;margin-top:4px}
-  .tip-result{font-family:var(--mono);font-size:13px;font-weight:700;color:#bef264;margin-top:3px}
-  .tip-direto{font-size:11px;color:#86efac;font-style:italic}
-
   /* LANÇAMENTOS */
   .lanc-section{padding:0}
   .lanc-row{display:flex;align-items:baseline;padding:6px 16px;border-top:1px solid #f0f4f8;overflow:hidden;gap:10px;transition:max-height .22s,opacity .18s,padding .18s;max-height:80px}
-  .lanc-row.row-D{background:var(--green-lt)}
-  .lanc-row.row-C{background:var(--orange-lt)}
-  .lanc-row.row-HIST{background:var(--gray-lt)}
-  body.hide-D .row-D{max-height:0!important;opacity:0;padding-top:0;padding-bottom:0;border-top-color:transparent}
-  body.hide-C .row-C{max-height:0!important;opacity:0;padding-top:0;padding-bottom:0;border-top-color:transparent}
+  .lanc-row.row-D{background:var(--green-lt)}.lanc-row.row-C{background:var(--orange-lt)}.lanc-row.row-HIST{background:var(--gray-lt)}
+  body.hide-D    .row-D   {max-height:0!important;opacity:0;padding-top:0;padding-bottom:0;border-top-color:transparent}
+  body.hide-C    .row-C   {max-height:0!important;opacity:0;padding-top:0;padding-bottom:0;border-top-color:transparent}
   body.hide-HIST .row-HIST{max-height:0!important;opacity:0;padding-top:0;padding-bottom:0;border-top-color:transparent}
-
   .lanc-badge{font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;flex-shrink:0;letter-spacing:.05em}
   .badge-D{background:#16a34a;color:white}.badge-C{background:#ea580c;color:white}
   .badge-HIST{background:#6b7280;color:white;font-family:var(--sans);font-size:9px;letter-spacing:.07em}
@@ -140,7 +202,7 @@
   .lanc-val-alt{font-size:9px;font-weight:400;opacity:.5;margin-left:3px;font-family:var(--mono)}
   .empty-lanc{padding:12px 16px;font-size:11px;color:#9ca3af;font-style:italic;border-top:1px solid #f0f4f8}
 
-  /* SUMMARY BAR */
+  /* SUMMARY */
   .summary-bar{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 20px;display:flex;gap:24px;flex-wrap:wrap;align-items:center}
   .sum-item{display:flex;flex-direction:column;gap:2px}
   .sum-label{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9ca3af}
@@ -156,6 +218,9 @@
 </head>
 <body>
 
+<!-- Global tooltip: appended to body, never clipped by card's overflow:hidden -->
+<div id="gtip"><div id="gtip-arr"></div></div>
+
 <header class="site-header">
   <div class="header-top">
     <div>
@@ -163,9 +228,7 @@
       <p class="sub">Competência: 28 de fevereiro de 2026 &nbsp;|&nbsp; UNIPAR – Contabilidade e Análise de Custos</p>
     </div>
     <div class="search-wrap">
-      <svg viewBox="0 0 20 20" fill="white" xmlns="http://www.w3.org/2000/svg">
-        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/>
-      </svg>
+      <svg viewBox="0 0 20 20" fill="white"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/></svg>
       <input type="text" id="search-input" placeholder="Buscar lançamento…" oninput="handleSearch(this.value)" autocomplete="off" spellcheck="false">
       <span class="search-count" id="search-count"></span>
     </div>
@@ -186,13 +249,17 @@
   <div class="leg-item"><div class="leg-dot" style="background:var(--adm)"></div>ADM</div>
   <div class="leg-item"><div class="leg-dot" style="background:var(--vend)"></div>Vendas</div>
   <div class="leg-item"><div class="leg-dot" style="background:var(--ind)"></div>Indústria</div>
-  <div class="leg-item" style="margin-left:auto;font-style:italic;opacity:.6">💡 Passe o mouse sobre ADM / Vendas / Indústria para ver como o valor foi calculado</div>
+  <div class="leg-item" style="margin-left:auto;font-style:italic;font-weight:400;opacity:.65">
+    💡 Toque ou passe o mouse nos campos com
+    <span style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:rgba(37,99,168,.15);color:var(--blue);font-size:8px;font-weight:700;border:1px solid rgba(37,99,168,.2);vertical-align:middle">?</span>
+    para ver o cálculo
+  </div>
 </div>
 
 <main id="main-content"></main>
 <div class="no-results" id="no-results">
   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-  Nenhum lançamento encontrado para "<span id="no-results-term"></span>"
+  Nenhum resultado para "<span id="no-results-term"></span>"
 </div>
 
 <footer>
@@ -203,49 +270,169 @@
 <script>
 const DATA=[{"num":1,"item":"Água","fato":"Àgua a pagar em março/2026","mes":"28/02/2026","valor":1200,"mult":1,"meses":1,"parcelas":1,"adm_ratio":4,"vendas_ratio":11,"industria_ratio":31,"tot_dep":46,"valor_base":1200,"criterio":"Colab","adm_val":104.35,"vendas_val":286.96,"industria_val":808.7,"lancamentos":[{"tipo":"D","conta":"Despesa com água / departamento Adm","valor":104.35,"valor_alt":null},{"tipo":"D","conta":"Despesa com água / departamento Vendas","valor":286.96,"valor_alt":null},{"tipo":"D","conta":"Produto X (Custo/Estoque)","valor":808.7,"valor_alt":null},{"tipo":"C","conta":"Água a pagar","valor":1200,"valor_alt":null},{"tipo":"HIST","conta":"Provisão de pgt. conta de água á Sanepar S.A, conf. fatura N","valor":null,"valor_alt":null}]},{"num":2,"item":"Alarmes","fato":"Alarmes a pagar em março/2026","mes":"28/02/2026","valor":800,"mult":1,"meses":1,"parcelas":1,"adm_ratio":50,"vendas_ratio":180,"industria_ratio":200,"tot_dep":430,"valor_base":800,"criterio":"m²","adm_val":93.02,"vendas_val":334.88,"industria_val":372.09,"lancamentos":[{"tipo":"D","conta":"Despesa com alarme / departamento Adm","valor":93.02,"valor_alt":null},{"tipo":"D","conta":"Despesa com alarme / departamento Vendas","valor":334.88,"valor_alt":null},{"tipo":"D","conta":"Produto X (Estoque / Produto em elaboração)","valor":372.09,"valor_alt":null},{"tipo":"C","conta":"Alarme a pagar","valor":800,"valor_alt":null},{"tipo":"HIST","conta":"Gasto c/ manutenção de alarmes, conf NF n","valor":null,"valor_alt":null}]},{"num":3,"item":"Aluguel","fato":"Aluguéis (valor mensal pactuado dia 02/02, primeiro pagamento em março/2026)","mes":"28/02/2026","valor":5000,"mult":1,"meses":1,"parcelas":1,"adm_ratio":50,"vendas_ratio":180,"industria_ratio":200,"tot_dep":430,"valor_base":5000,"criterio":"m²","adm_val":581.4,"vendas_val":2093.02,"industria_val":2325.58,"lancamentos":[{"tipo":"D","conta":"Despesa com aluguel / departamento Adm","valor":581.4,"valor_alt":null},{"tipo":"D","conta":"Despesa com aluguel / departamento Vendas","valor":2093.02,"valor_alt":null},{"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":2325.58,"valor_alt":null},{"tipo":"C","conta":"Aluguéis a pagar","valor":5000,"valor_alt":null},{"tipo":"HIST","conta":"Provisão de pgt. aluguel, conf contrato x","valor":null,"valor_alt":null}]},{"num":4,"item":"Combustível","fato":"Combustíveis (sem nº de placa nas notas) pagos a vista com cartão de débito","mes":"28/02/2026","valor":3000,"mult":1,"meses":1,"parcelas":1,"adm_ratio":0.2,"vendas_ratio":0.8,"industria_ratio":0,"tot_dep":1,"valor_base":3000,"criterio":"%","adm_val":600,"vendas_val":2400,"industria_val":0,"lancamentos":[{"tipo":"D","conta":"Despesa com combustível / departamento Adm","valor":600,"valor_alt":null},{"tipo":"D","conta":"Despesa com combustível / departamento Vendas","valor":2400,"valor_alt":null},{"tipo":"C","conta":"Banco conta movimento","valor":3000,"valor_alt":null},{"tipo":"HIST","conta":"Pagamento de combustíveis com cartão de débito Visa, conf NF ..","valor":null,"valor_alt":null}]},{"num":5,"item":"Bombeiro","fato":"Taxa do corpo de bombeiro paga a vista em dinheiro","mes":"todos os meses de 2026","valor":400,"mult":1,"meses":12,"parcelas":1,"adm_ratio":50,"vendas_ratio":180,"industria_ratio":200,"tot_dep":430,"valor_base":33.33,"criterio":"m²","adm_val":3.88,"vendas_val":13.95,"industria_val":15.5,"lancamentos":[{"tipo":"D","conta":"Taxa corpo de bombeiros a apropriar","valor":400,"valor_alt":null},{"tipo":"C","conta":"Caixa","valor":400,"valor_alt":null},{"tipo":"HIST","conta":"PGT da taxa de corpo de bombeiros paga á vista, conf guia X..","valor":null,"valor_alt":null},{"tipo":"D","conta":"Despesa com taxa corpo bombeiros / departamento Adm","valor":3.88,"valor_alt":3.88},{"tipo":"D","conta":"Despesa com taxa corpo bombeiros / departamento Vendas","valor":13.95,"valor_alt":13.95},{"tipo":"D","conta":"Produto X (Custo/Estoque)","valor":15.5,"valor_alt":15.5},{"tipo":"C","conta":"Taxa do corpo de bombeiros a apropriar","valor":33.33,"valor_alt":400},{"tipo":"HIST","conta":"Apropriação da taxa do corpo de bombeiros – Umuarama/PR, conf guia X","valor":null,"valor_alt":null}]},{"num":6,"item":"Cursos","fato":"Cursos de capacitação para todos os colaboradores e gestores – 3 parcelas, 1ª vence em março/2026","mes":"28/02/2026","valor":2000,"mult":1,"meses":1,"parcelas":3,"adm_ratio":4,"vendas_ratio":11,"industria_ratio":31,"tot_dep":46,"valor_base":666.67,"criterio":"Colab","adm_val":57.97,"vendas_val":159.42,"industria_val":449.28,"lancamentos":[{"tipo":"D","conta":"Despesa com curso de capacitação / departamento Adm","valor":57.97,"valor_alt":173.91},{"tipo":"D","conta":"Despesa com curso de capacitação / departamento Vendas","valor":159.42,"valor_alt":478.26},{"tipo":"D","conta":"Produto X (Estoque/Produto em elaboração)","valor":449.28,"valor_alt":1347.83},{"tipo":"C","conta":"Curso de capacitação a pagar","valor":666.67,"valor_alt":2000},{"tipo":"HIST","conta":"Provisão de pagamento de curso de capacitação, conf NF n… pela prestação de serviço","valor":null,"valor_alt":null}]},{"num":7,"item":"Depreciação","fato":"Depreciação – valor para cada veículo (3 veículos)","mes":"28/02/2026","valor":500,"mult":3,"meses":1,"parcelas":1,"adm_ratio":0.34,"vendas_ratio":0.66,"industria_ratio":0,"tot_dep":1,"valor_base":1500,"criterio":"%","adm_val":510,"vendas_val":990,"industria_val":0,"lancamentos":[{"tipo":"D","conta":"Despesa com depreciação / departamento Adm","valor":510,"valor_alt":170},{"tipo":"D","conta":"Despesa com depreciação / departamento Vendas","valor":990,"valor_alt":330},{"tipo":"C","conta":"Depreciação acumulada","valor":1500,"valor_alt":500},{"tipo":"HIST","conta":"Depreciação de veículos – fev/2026, conf relatório interno nº X","valor":null,"valor_alt":null}]},{"num":8,"item":"Internet","fato":"Internet, vencimento em março/2026","mes":"28/02/2026","valor":300,"mult":1,"meses":1,"parcelas":1,"adm_ratio":0.5,"vendas_ratio":0.4,"industria_ratio":0.1,"tot_dep":1,"valor_base":300,"criterio":"%","adm_val":150,"vendas_val":120,"industria_val":30,"lancamentos":[{"tipo":"D","conta":"Despesa com internet / departamento Adm","valor":150,"valor_alt":null},{"tipo":"D","conta":"Despesa com internet / departamento Vendas","valor":120,"valor_alt":null},{"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":30,"valor_alt":null},{"tipo":"C","conta":"Internet a pagar","valor":300,"valor_alt":null},{"tipo":"HIST","conta":"Provisão de pagamento de internet – InternetX, conf. Fatura n X","valor":null,"valor_alt":null}]},{"num":9,"item":"Telefone","fato":"Telefone (fixo e celular-plano não fixo) vencimento em março/2026","mes":"28/02/2026","valor":200,"mult":1,"meses":1,"parcelas":1,"adm_ratio":0.4,"vendas_ratio":0.5,"industria_ratio":0.1,"tot_dep":1,"valor_base":200,"criterio":"%","adm_val":80,"vendas_val":100,"industria_val":20,"lancamentos":[{"tipo":"D","conta":"Despesa com telefone / departamento Adm","valor":80,"valor_alt":null},{"tipo":"D","conta":"Despesa com telefone / departamento Vendas","valor":100,"valor_alt":null},{"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":20,"valor_alt":null},{"tipo":"C","conta":"Telefone a pagar","valor":200,"valor_alt":null},{"tipo":"HIST","conta":"Provisão de pagamento – Conta de Telefone à OperadoraX, conf Fatura X","valor":null,"valor_alt":null}]},{"num":10,"item":"Energia Elétrica","fato":"Energia Elétrica, vencimento em março/2026","mes":"28/02/2026","valor":1800,"mult":1,"meses":1,"parcelas":1,"adm_ratio":50,"vendas_ratio":180,"industria_ratio":200,"tot_dep":430,"valor_base":1800,"criterio":"m²","adm_val":209.3,"vendas_val":753.49,"industria_val":837.21,"lancamentos":[{"tipo":"D","conta":"Despesa com energia elétrica / departamento Adm","valor":209.3,"valor_alt":null},{"tipo":"D","conta":"Despesa com energia elétrica / departamento Vendas","valor":753.49,"valor_alt":null},{"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":837.21,"valor_alt":null},{"tipo":"C","conta":"Energia elétrica a pagar","valor":1800,"valor_alt":null},{"tipo":"HIST","conta":"Provisão de PGT – conta de energia elétrica á CopelX, conf. fatura nX","valor":null,"valor_alt":null}]},{"num":11,"item":"Honor. Contábeis","fato":"Honorários contábeis, vencimento em março/2026","mes":"28/02/2026","valor":3000,"mult":1,"meses":1,"parcelas":1,"adm_ratio":1,"vendas_ratio":0,"industria_ratio":0,"tot_dep":1,"valor_base":3000,"criterio":"Direto","adm_val":3000,"vendas_val":0,"industria_val":0,"lancamentos":[{"tipo":"D","conta":"Honorários contábeis / departamento Adm","valor":3000,"valor_alt":null},{"tipo":"C","conta":"Honorários contábeis a pagar","valor":3000,"valor_alt":null},{"tipo":"HIST","conta":"Provisão de Pgt dos honorários contábeis á ContábileX, conf. NF nX","valor":null,"valor_alt":null}]},{"num":12,"item":"Honor. Jurídicos","fato":"Honorários jurídicos – ação trabalhista depto de vendas – pago via PIX em fevereiro/2026","mes":"28/02/2026","valor":2000,"mult":1,"meses":1,"parcelas":1,"adm_ratio":0,"vendas_ratio":1,"industria_ratio":0,"tot_dep":1,"valor_base":2000,"criterio":"Direto","adm_val":0,"vendas_val":2000,"industria_val":0,"lancamentos":[{"tipo":"D","conta":"Despesa com honorários jurídicos / departamento Vendas","valor":2000,"valor_alt":null},{"tipo":"C","conta":"Banco conta movimento","valor":2000,"valor_alt":null},{"tipo":"HIST","conta":"Pagamento de honorários jurídicos via PIX conf. NF x","valor":null,"valor_alt":null}]},{"num":13,"item":"Honor. Médicos","fato":"Honorários médicos – exames periódicos – valor unitário (todos os colab. e gestores fizeram) – pago pela internet em fev/2026","mes":"28/02/2026","valor":150,"mult":46,"meses":1,"parcelas":1,"adm_ratio":4,"vendas_ratio":11,"industria_ratio":31,"tot_dep":46,"valor_base":6900,"criterio":"Colab","adm_val":600,"vendas_val":1650,"industria_val":4650,"lancamentos":[{"tipo":"D","conta":"Despesa com honorários médicos / departamento Adm","valor":600,"valor_alt":600},{"tipo":"D","conta":"Despesa com honorários médicos / departamento Vendas","valor":1650,"valor_alt":1650},{"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":4650,"valor_alt":4650},{"tipo":"C","conta":"Honorários médicos a pagar","valor":6900,"valor_alt":150},{"tipo":"HIST","conta":"Pagamento de honorários médicos á empresa X conf. NF x","valor":null,"valor_alt":null}]},{"num":14,"item":"IPTU","fato":"IPTU pago a vista em fevereiro/2026 (competência: todos os meses de 2026)","mes":"todos os meses de 2026","valor":8000,"mult":1,"meses":12,"parcelas":1,"adm_ratio":50,"vendas_ratio":180,"industria_ratio":200,"tot_dep":430,"valor_base":666.67,"criterio":"m²","adm_val":77.52,"vendas_val":279.07,"industria_val":310.08,"lancamentos":[{"tipo":"D","conta":"IPTU a apropriar","valor":8000,"valor_alt":null},{"tipo":"C","conta":"Caixa","valor":8000,"valor_alt":null},{"tipo":"HIST","conta":"Pgt IPTU à prefeitura Municipal de Umuarama, conf guia N x","valor":null,"valor_alt":null},{"tipo":"D","conta":"Despesa com IPTU / departamento Adm","valor":77.52,"valor_alt":null},{"tipo":"D","conta":"Despesa com IPTU / departamento Vendas","valor":279.07,"valor_alt":null},{"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":310.08,"valor_alt":null},{"tipo":"C","conta":"IPTU a apropriar","valor":666.67,"valor_alt":null},{"tipo":"HIST","conta":"Apropriação de IPTU à prefeitura, conf guia paga em X","valor":null,"valor_alt":null}]},{"num":15,"item":"IPVA","fato":"IPVA – valor por veículo – parcelado em 4 pagamentos, 1º em fevereiro/2026","mes":"todos os meses de 2026","valor":2300,"mult":3,"meses":12,"parcelas":4,"adm_ratio":0.34,"vendas_ratio":0.66,"industria_ratio":0,"tot_dep":1,"valor_base":143.75,"criterio":"%","adm_val":48.88,"vendas_val":94.88,"industria_val":0,"lancamentos":[{"tipo":"D","conta":"IPVA a apropriar","valor":null,"valor_alt":null},{"tipo":"C","conta":"IPVA a pagar","valor":null,"valor_alt":null},{"tipo":"HIST","conta":"Provisão de pagamento de IPVA – Umuarama/PR, conf guia N x","valor":null,"valor_alt":null},{"tipo":"D","conta":"Despesa com IPVA / departamento Adm","valor":48.88,"valor_alt":65.17},{"tipo":"D","conta":"Despesa com IPVA / departamento Vendas","valor":94.88,"valor_alt":126.5},{"tipo":"C","conta":"IPVA a apropriar","valor":143.75,"valor_alt":2300},{"tipo":"HIST","conta":"Apropriação do IPVA, conf guia N x, de fevereiro","valor":null,"valor_alt":null}]},{"num":16,"item":"Manutenção","fato":"Manutenção preventiva de prédios, máquinas e equipamentos (sem contrato) – pago via PIX em fev/2026","mes":"28/02/2026","valor":1500,"mult":1,"meses":1,"parcelas":1,"adm_ratio":0.25,"vendas_ratio":0.05,"industria_ratio":0.7,"tot_dep":1,"valor_base":1500,"criterio":"%","adm_val":375,"vendas_val":75,"industria_val":1050,"lancamentos":[{"tipo":"D","conta":"Despesa com manutenção de prédios, máquinas e equipamentos / depto Adm","valor":375,"valor_alt":null},{"tipo":"D","conta":"Despesa com manutenção de prédios, máquinas e equipamentos / depto Vendas","valor":75,"valor_alt":null},{"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":1050,"valor_alt":null},{"tipo":"C","conta":"Banco conta movimento","valor":1500,"valor_alt":null},{"tipo":"HIST","conta":"Pagamento de manutenção de prédios, máquinas e equipamentos, conf NFx","valor":null,"valor_alt":null}]},{"num":17,"item":"Mat. Escritório","fato":"Materiais de escritório – aquisição a prazo, 3 parcelas, 1ª vence em abril/2026","mes":"28/02/2026","valor":800,"mult":1,"meses":1,"parcelas":3,"adm_ratio":0.6,"vendas_ratio":0.38,"industria_ratio":0.02,"tot_dep":1,"valor_base":800,"criterio":"%","adm_val":480,"vendas_val":304,"industria_val":16,"lancamentos":[{"tipo":"D","conta":"Despesa com mat. de escritório (uso e consumo) / departamento Adm","valor":480,"valor_alt":null},{"tipo":"D","conta":"Despesa com mat. de escritório (uso e consumo) / departamento Vendas","valor":304,"valor_alt":null},{"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":16,"valor_alt":null},{"tipo":"C","conta":"Materiais de escritório a pagar","valor":800,"valor_alt":null},{"tipo":"HIST","conta":"Provisão de material de escritório, conf. NF nº X – fornecedor Empresa X","valor":null,"valor_alt":null}]},{"num":18,"item":"Mat. Limpeza","fato":"Materiais de limpeza – pagamento do boleto em fevereiro/2026","mes":"fev, março e abril/2026","valor":600,"mult":1,"meses":1,"parcelas":3,"adm_ratio":50,"vendas_ratio":180,"industria_ratio":200,"tot_dep":430,"valor_base":200,"criterio":"m²","adm_val":23.26,"vendas_val":83.72,"industria_val":93.02,"lancamentos":[{"tipo":"D","conta":"Materiais de limpeza (Estoque/Almoxarifado)","valor":600,"valor_alt":null},{"tipo":"C","conta":"Banco conta movimento","valor":600,"valor_alt":null},{"tipo":"HIST","conta":"Aquisição à vista de material de limpeza conforme NF X","valor":null,"valor_alt":null},{"tipo":"D","conta":"Despesa com materiais de limpeza / departamento Adm","valor":23.26,"valor_alt":69.77},{"tipo":"D","conta":"Despesa com materiais de limpeza / departamento Vendas","valor":83.72,"valor_alt":251.16},{"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":93.02,"valor_alt":279.07},{"tipo":"C","conta":"Estoque (Almoxarifado)","valor":200,"valor_alt":600},{"tipo":"HIST","conta":"Consumo de material de limpeza do almoxarifado","valor":null,"valor_alt":null}]},{"num":19,"item":"Pró-labore","fato":"Pró-labore – único sócio é o administrador, a pagar em março/2026","mes":"28/02/2026","valor":5000,"mult":1,"meses":1,"parcelas":1,"adm_ratio":1,"vendas_ratio":0,"industria_ratio":0,"tot_dep":1,"valor_base":5000,"criterio":"Direto","adm_val":5000,"vendas_val":0,"industria_val":0,"lancamentos":[{"tipo":"D","conta":"Despesa com Pró-labore / departamento Adm","valor":5000,"valor_alt":null},{"tipo":"C","conta":"Pró-labore a pagar","valor":5000,"valor_alt":null},{"tipo":"HIST","conta":"Provisão de pró-labore do sócio administrador – fev/2026, a pagar em março/2026","valor":null,"valor_alt":null}]},{"num":20,"item":"Extintores","fato":"Recargas de extintores – valor por recarga – pago em dinheiro em fevereiro/2026","mes":"todos os meses de 2026","valor":150,"mult":1,"meses":12,"parcelas":1,"adm_ratio":50,"vendas_ratio":180,"industria_ratio":200,"tot_dep":430,"valor_base":12.5,"criterio":"m²","adm_val":1.45,"vendas_val":5.23,"industria_val":5.81,"lancamentos":[{"tipo":"D","conta":"Recargas de extintores a apropriar","valor":150,"valor_alt":null},{"tipo":"C","conta":"Caixa","valor":150,"valor_alt":null},{"tipo":"HIST","conta":"PGT de recarga de extintores à Empresa X, conf NF N…","valor":null,"valor_alt":null},{"tipo":"D","conta":"Despesa com recargas de extintores / departamento Adm","valor":1.45,"valor_alt":1.45},{"tipo":"D","conta":"Despesa com recargas de extintores / departamento Vendas","valor":5.23,"valor_alt":5.23},{"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":5.81,"valor_alt":5.81},{"tipo":"C","conta":"Recargas de extintores a apropriar","valor":12.5,"valor_alt":150},{"tipo":"HIST","conta":"Apropriação da recarga de extintores à Empresa X, Conf NF N…","valor":null,"valor_alt":null}]},{"num":21,"item":"Salários (Colab.)","fato":"Salários e reflexos de cada colaborador de cada departamento (exceto limpeza) – a pagar em março/2026","mes":"28/02/2026","valor":4000,"mult":46,"meses":1,"parcelas":1,"adm_ratio":4,"vendas_ratio":11,"industria_ratio":31,"tot_dep":46,"valor_base":184000,"criterio":"Colab","adm_val":16000,"vendas_val":44000,"industria_val":124000,"lancamentos":[{"tipo":"D","conta":"Despesa com salários / departamento Adm","valor":16000,"valor_alt":null},{"tipo":"D","conta":"Despesa com salários / departamento Vendas","valor":44000,"valor_alt":null},{"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":124000,"valor_alt":null},{"tipo":"C","conta":"Salários a pagar","valor":184000,"valor_alt":null},{"tipo":"HIST","conta":"Provisão de pagamento de salários dos profissionais (exceto limpeza), conf. holerite n°/nome do funcionário","valor":null,"valor_alt":null}]},{"num":22,"item":"Salários (Limpeza)","fato":"Salários e reflexos do profissional da limpeza, a pagar em março/2026","mes":"28/02/2026","valor":2000,"mult":1,"meses":1,"parcelas":1,"adm_ratio":50,"vendas_ratio":180,"industria_ratio":200,"tot_dep":430,"valor_base":2000,"criterio":"m²","adm_val":232.56,"vendas_val":837.21,"industria_val":930.23,"lancamentos":[{"tipo":"D","conta":"Salário do profissional de limpeza / departamento Adm","valor":232.56,"valor_alt":null},{"tipo":"D","conta":"Salário do profissional de limpeza / departamento Vendas","valor":837.21,"valor_alt":null},{"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":930.23,"valor_alt":null},{"tipo":"C","conta":"Salários dos profissionais de limpeza a pagar","valor":2000,"valor_alt":null},{"tipo":"HIST","conta":"Provisão de salários e encargos do colaborador da limpeza – fev/2026, a pagar em março/2026","valor":null,"valor_alt":null}]},{"num":23,"item":"Salários (Vigilância)","fato":"Salários e reflexos dos dois profissionais da vigilância, a pagar em março/2026","mes":"28/02/2026","valor":5000,"mult":1,"meses":1,"parcelas":1,"adm_ratio":0.34,"vendas_ratio":0.33,"industria_ratio":0.33,"tot_dep":1,"valor_base":5000,"criterio":"%","adm_val":1700,"vendas_val":1650,"industria_val":1650,"lancamentos":[{"tipo":"D","conta":"Despesa com profissionais de vigilância / departamento Adm","valor":1700,"valor_alt":null},{"tipo":"D","conta":"Despesa com profissionais de vigilância / departamento Vendas","valor":1650,"valor_alt":null},{"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":1650,"valor_alt":null},{"tipo":"C","conta":"Salários dos profissionais de vigilância a pagar","valor":5000,"valor_alt":null},{"tipo":"HIST","conta":"Provisão de pagamento dos profissionais de vigilância – fev/2026, a pagar em março/2026","valor":null,"valor_alt":null}]},{"num":24,"item":"Seguro Patrimonial","fato":"Seguro patrimonial – apólice em 5 parcelas, 1ª vence em março/2026","mes":"todos os meses de 2026","valor":3000,"mult":1,"meses":12,"parcelas":5,"adm_ratio":50,"vendas_ratio":180,"industria_ratio":200,"tot_dep":430,"valor_base":50,"criterio":"m²","adm_val":5.81,"vendas_val":20.93,"industria_val":23.26,"lancamentos":[{"tipo":"D","conta":"Seguro patrimonial a apropriar","valor":null,"valor_alt":null},{"tipo":"C","conta":"Seguro patrimonial a pagar","valor":null,"valor_alt":null},{"tipo":"HIST","conta":"Provisão de pgt de seguro patrimonial da EmpresaX, conf boleto X…","valor":null,"valor_alt":null},{"tipo":"D","conta":"Despesa com seguro patrimonial / departamento Adm","valor":5.81,"valor_alt":29.07},{"tipo":"D","conta":"Despesa com seguro patrimonial / departamento Vendas","valor":20.93,"valor_alt":104.65},{"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":23.26,"valor_alt":116.28},{"tipo":"C","conta":"Seguro patrimonial a apropriar","valor":50,"valor_alt":3000},{"tipo":"HIST","conta":"Apropriação de seguro patrimonial, conf boleto X emitido pela EmpresaX","valor":null,"valor_alt":null}]},{"num":25,"item":"Seguro Pessoal","fato":"Seguros pessoais – apólice em 12 parcelas, 1ª vence em março/2026","mes":"todos os meses de 2026","valor":2000,"mult":1,"meses":12,"parcelas":1,"adm_ratio":4,"vendas_ratio":11,"industria_ratio":31,"tot_dep":46,"valor_base":166.67,"criterio":"Colab","adm_val":14.49,"vendas_val":39.86,"industria_val":112.32,"lancamentos":[{"tipo":"D","conta":"Seguro pessoal a apropriar","valor":166.67,"valor_alt":null},{"tipo":"C","conta":"Seguro pessoal a pagar","valor":166.67,"valor_alt":null},{"tipo":"HIST","conta":"Provisão de pagamento de seguro pessoal, conf boleto X","valor":null,"valor_alt":null},{"tipo":"D","conta":"Despesa com seguro pessoal / departamento Adm","valor":14.49,"valor_alt":14.49},{"tipo":"D","conta":"Despesa com seguro pessoal / departamento Vendas","valor":39.86,"valor_alt":39.86},{"tipo":"D","conta":"Produto X (Estoque em elaboração/Custo)","valor":112.32,"valor_alt":112.32},{"tipo":"C","conta":"Seguro pessoal a apropriar","valor":166.67,"valor_alt":2000},{"tipo":"HIST","conta":"Apropriação dos seguros pessoais, conf boleto X emitido pela Empresa X","valor":null,"valor_alt":null}]},{"num":26,"item":"Uniforme","fato":"Uniforme – 4 por colab., 2 entregues em fev/2026 – compra a prazo em 24 parcelas","mes":"foi entregue 2 p/ colab. em fev/2026","valor":5000,"mult":1,"meses":1,"parcelas":24,"adm_ratio":4,"vendas_ratio":11,"industria_ratio":31,"tot_dep":46,"valor_base":208.33,"criterio":"Colab","adm_val":18.12,"vendas_val":49.82,"industria_val":140.4,"lancamentos":[{"tipo":"D","conta":"Despesa com uniformes / departamento Adm","valor":18.12,"valor_alt":18.12},{"tipo":"D","conta":"Despesa com uniformes / departamento Vendas","valor":49.82,"valor_alt":49.82},{"tipo":"D","conta":"Produto X (Estoque/Produto em elaboração)","valor":140.4,"valor_alt":140.4},{"tipo":"C","conta":"Uniformes a apropriar","valor":208.33,"valor_alt":5000},{"tipo":"HIST","conta":"Apropriação de uniformes entregues aos colaboradores, ref. fev/2026, conf. NF n°...","valor":null,"valor_alt":null}]},{"num":27,"item":"Vale Transporte","fato":"Vale transporte pago em dinheiro – somente colaboradores do depto Adm","mes":"28/02/2026","valor":300,"mult":1,"meses":1,"parcelas":1,"adm_ratio":1,"vendas_ratio":0,"industria_ratio":0,"tot_dep":1,"valor_base":300,"criterio":"Direto","adm_val":300,"vendas_val":0,"industria_val":0,"lancamentos":[{"tipo":"D","conta":"Despesa com vale transporte / departamento Adm","valor":300,"valor_alt":null},{"tipo":"C","conta":"Caixa","valor":300,"valor_alt":null},{"tipo":"HIST","conta":"Pagamento em dinheiro do vale transporte – colaboradores do depto Adm, ref. fev/2026","valor":null,"valor_alt":null}]},{"num":28,"item":"Vigilância Sanitária","fato":"Vigilância sanitária – pago em dinheiro em fevereiro/2026","mes":"todos os meses de 2026","valor":500,"mult":1,"meses":12,"parcelas":1,"adm_ratio":50,"vendas_ratio":180,"industria_ratio":200,"tot_dep":430,"valor_base":41.67,"criterio":"m²","adm_val":4.84,"vendas_val":17.44,"industria_val":19.38,"lancamentos":[{"tipo":"D","conta":"Vigilância sanitária a apropriar","valor":null,"valor_alt":null},{"tipo":"C","conta":"Caixa","valor":null,"valor_alt":null},{"tipo":"HIST","conta":"Pgt à vigilância sanitária em dinheiro, conf guia x..","valor":null,"valor_alt":null},{"tipo":"D","conta":"Despesa com vigilância sanitária / departamento Adm","valor":4.84,"valor_alt":4.84},{"tipo":"D","conta":"Despesa com vigilância sanitária / departamento Vendas","valor":17.44,"valor_alt":17.44},{"tipo":"D","conta":"Produto X (Estoque em elaboração/Custo)","valor":19.38,"valor_alt":19.38},{"tipo":"C","conta":"Vigilância sanitária a apropriar","valor":41.67,"valor_alt":500},{"tipo":"HIST","conta":"Apropriação da vigilância sanitária conf guia X","valor":null,"valor_alt":null}]}];
 
-// ── HELPERS ──────────────────────────────────────────────────────────────────
-const brl = v => v === null || v === undefined ? '—' : 'R$ ' + Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-const n   = (v,d=2) => v === null || v === undefined ? '—' : Number(v).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+const brl = v => v===null||v===undefined ? '—' : 'R$\u00a0'+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const n   = (v,d=2) => v===null||v===undefined ? '—' : Number(v).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
 
-// ── TOOLTIP FORMULA BUILDER ───────────────────────────────────────────────────
-function buildTip(item, dept) {
-  const label  = dept==='adm' ? 'Administração' : dept==='vend' ? 'Vendas' : 'Indústria';
-  const ratio  = dept==='adm' ? item.adm_ratio   : dept==='vend' ? item.vendas_ratio  : item.industria_ratio;
-  const result = dept==='adm' ? item.adm_val     : dept==='vend' ? item.vendas_val    : item.industria_val;
-  const crit   = item.criterio;
-  const base   = item.valor_base;
+// ════════════════════════════════════════════════════════════════
+// GLOBAL TOOLTIP ENGINE
+// ─────────────────────────────────────────────────────────────
+// KEY FIXES vs v3:
+//  1. NEVER set style.opacity in JS  →  only style.visibility for measurement.
+//     Inline styles override CSS classes (higher specificity).
+//     opacity is controlled exclusively by the CSS class .tip-show.
+//  2. Arrow is a rotated square div (#gtip-arr) with clip-path + box-shadow,
+//     visible on any background including dark card headers.
+// ════════════════════════════════════════════════════════════════
+const gtip = document.getElementById('gtip');
+const garr = document.getElementById('gtip-arr');
+let tipTimer   = null;
+let activeEl   = null;
 
-  let h = `<div class="tip-title">Como chegou em ${label}?</div>`;
+function showTip(el, html) {
+  clearTimeout(tipTimer);
+
+  // Deactivate previous trigger
+  if (activeEl && activeEl !== el) activeEl.classList.remove('tip-active');
+  activeEl = el;
+  el.classList.add('tip-active');
+
+  // --- STEP 1: render content while invisible (no opacity change!) ---
+  gtip.innerHTML = html;
+  gtip.appendChild(garr); // keep arrow inside gtip
+  gtip.style.display    = 'block';
+  gtip.style.visibility = 'hidden'; // hide without touching opacity
+  gtip.classList.remove('tip-show');
+
+  // --- STEP 2: measure rendered dimensions ---
+  const tw = gtip.offsetWidth;
+  const th = gtip.offsetHeight;
+  const tr = el.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const GAP = 10, AH = 8; // gap between element and tooltip, arrow half-size
+
+  // Prefer above; fall back to below if not enough room
+  let top, arrDir;
+  if (tr.top - th - GAP - AH*2 > 4) {
+    top    = tr.top - th - GAP - AH*2;
+    arrDir = 'down'; // arrow points downward toward the trigger
+  } else {
+    top    = tr.bottom + GAP + AH*2;
+    arrDir = 'up';
+  }
+
+  // Center tooltip over trigger, clamp to viewport
+  let left = tr.left + tr.width / 2 - tw / 2;
+  left = Math.max(8, Math.min(left, vw - tw - 8));
+
+  // Arrow horizontal: center of trigger relative to tooltip left edge, clamped
+  const arrowCenter = tr.left + tr.width / 2 - left;
+  const arrowLeft   = Math.max(16, Math.min(arrowCenter - AH, tw - 16 - AH*2));
+
+  // --- STEP 3: position tooltip ---
+  gtip.style.left = left + 'px';
+  gtip.style.top  = top  + 'px';
+
+  // --- STEP 4: position arrow ---
+  garr.className = arrDir === 'down' ? 'arr-down' : 'arr-up';
+  garr.style.left = arrowLeft + 'px';
+  if (arrDir === 'down') {
+    garr.style.top    = 'auto';
+    garr.style.bottom = '-7px';
+  } else {
+    garr.style.bottom = 'auto';
+    garr.style.top    = '-7px';
+  }
+
+  // --- STEP 5: reveal — only via class, NEVER via style.opacity ---
+  gtip.style.visibility = ''; // clear the measurement hide
+  gtip.classList.add('tip-show'); // CSS handles opacity 0→1 transition
+}
+
+function hideTip(now) {
+  if (now) { _hide(); return; }
+  tipTimer = setTimeout(_hide, 200);
+}
+function _hide() {
+  gtip.classList.remove('tip-show');
+  // After transition, hide display so it doesn't intercept pointer events
+  setTimeout(() => { if (!gtip.classList.contains('tip-show')) gtip.style.display = 'none'; }, 200);
+  if (activeEl) { activeEl.classList.remove('tip-active'); activeEl = null; }
+}
+
+// Close on outside touch (mobile)
+document.addEventListener('touchstart', e => {
+  if (activeEl && !activeEl.contains(e.target) && !gtip.contains(e.target)) hideTip(true);
+}, {passive: true});
+
+function attachTip(el, html) {
+  el.classList.add('has-tip');
+  el.addEventListener('mouseenter', () => showTip(el, html));
+  el.addEventListener('mouseleave', () => hideTip());
+  el.addEventListener('touchstart', e => {
+    e.preventDefault();
+    activeEl === el ? hideTip(true) : showTip(el, html);
+  }, {passive: false});
+}
+
+// ── TOOLTIP CONTENT ───────────────────────────────────────────────────────────
+function tipValorBase(item) {
+  const {valor, mult, meses, parcelas, valor_base} = item;
+  const simple = mult===1 && meses===1 && parcelas===1;
+  let h = `<div class="tip-title"><span class="tip-icon">📐</span>Como chegou no Valor Base?</div>
+    <div class="tip-line"><span class="tip-label">Valor Total</span><span class="tip-val">${brl(valor)}</span></div>`;
+  if (!simple) {
+    if (mult > 1)     h += `<div class="tip-line"><span class="tip-label">Multiplicador (qtd.)</span><span class="tip-val">× ${mult}</span></div>`;
+    if (meses > 1)    h += `<div class="tip-line"><span class="tip-label">Meses de competência</span><span class="tip-val">÷ ${meses}</span></div>`;
+    if (parcelas > 1) h += `<div class="tip-line"><span class="tip-label">Parcelas no período</span><span class="tip-val">÷ ${parcelas}</span></div>`;
+    const parts = [n(valor)];
+    if (mult > 1)     parts.push(`× ${mult}`);
+    if (meses > 1)    parts.push(`÷ ${meses}`);
+    if (parcelas > 1) parts.push(`÷ ${parcelas}`);
+    h += `<hr class="tip-divider"><div class="tip-formula">${parts.join(' ')}</div>`;
+  } else {
+    h += `<hr class="tip-divider"><div class="tip-note">Mult.×1 · Meses÷1 · Parc.÷1 — sem divisão aplicada.</div>`;
+  }
+  h += `<div class="tip-result">= ${brl(valor_base)}</div>
+    <div class="tip-note">Valor que entra na competência fev/2026, antes do rateio entre departamentos.</div>`;
+  return h;
+}
+
+function tipAloc(item, dept) {
+  const lbl  = dept==='adm'?'Administração':dept==='vend'?'Vendas':'Indústria';
+  const ratio = dept==='adm'?item.adm_ratio:dept==='vend'?item.vendas_ratio:item.industria_ratio;
+  const res   = dept==='adm'?item.adm_val:dept==='vend'?item.vendas_val:item.industria_val;
+  const crit  = item.criterio;
+  const base  = item.valor_base;
+
+  let h = `<div class="tip-title"><span class="tip-icon">🔢</span>Como chegou em ${lbl}?</div>`;
 
   if (crit === 'Direto') {
-    h += result === 0
-      ? `<div class="tip-direto">Sem alocação direta para este departamento.</div>`
+    return h + (res===0
+      ? `<div class="tip-direto">Nenhuma alocação direta para este departamento.</div>`
       : `<div class="tip-line"><span class="tip-label">Critério</span><span class="tip-val">Direto</span></div>
          <div class="tip-line"><span class="tip-label">Valor base</span><span class="tip-val">${brl(base)}</span></div>
          <hr class="tip-divider">
-         <div class="tip-direto">100% alocado diretamente a ${label}.</div>
-         <div class="tip-result">= ${brl(result)}</div>`;
-    return h;
+         <div class="tip-direto">100% alocado diretamente a ${lbl}.</div>
+         <div class="tip-result">= ${brl(res)}</div>`);
   }
+
+  h += `<div class="tip-line"><span class="tip-label">Valor base (÷ meses ÷ parc.)</span><span class="tip-val">${brl(base)}</span></div>`;
 
   if (crit === '%') {
     const pct = (ratio*100).toFixed(0);
-    h += `<div class="tip-line"><span class="tip-label">Critério</span><span class="tip-val">Percentual</span></div>
-          <div class="tip-line"><span class="tip-label">Valor base</span><span class="tip-val">${brl(base)}</span></div>
-          <div class="tip-line"><span class="tip-label">% alocada</span><span class="tip-val">${pct}%</span></div>
+    h += `<div class="tip-line"><span class="tip-label">% alocada a ${lbl}</span><span class="tip-val">${pct}%</span></div>
           <hr class="tip-divider">
-          <div class="tip-formula">${n(base)} × ${pct}%</div>
-          <div class="tip-result">= ${brl(result)}</div>`;
+          <div class="tip-formula">${n(base)} × ${pct}%</div>`;
   } else {
-    const unit = crit === 'm²' ? 'm²' : 'colab.';
-    h += `<div class="tip-line"><span class="tip-label">Critério</span><span class="tip-val">${crit}</span></div>
-          <div class="tip-line"><span class="tip-label">Valor base</span><span class="tip-val">${brl(base)}</span></div>
-          <div class="tip-line"><span class="tip-label">${label} (${unit})</span><span class="tip-val">${ratio}${crit==='m²'?'m²':''}</span></div>
+    const unit = crit==='m²'?'m²':'colab.';
+    h += `<div class="tip-line"><span class="tip-label">${lbl} (${unit})</span><span class="tip-val">${ratio}${crit==='m²'?'m²':''}</span></div>
           <div class="tip-line"><span class="tip-label">Total (${unit})</span><span class="tip-val">${item.tot_dep}${crit==='m²'?'m²':''}</span></div>
           <hr class="tip-divider">
-          <div class="tip-formula">${n(base)} × (${ratio} ÷ ${item.tot_dep})</div>
-          <div class="tip-result">= ${brl(result)}</div>`;
+          <div class="tip-formula">${n(base)} × (${ratio} ÷ ${item.tot_dep})</div>`;
   }
+  h += `<div class="tip-result">= ${brl(res)}</div>`;
   return h;
 }
 
@@ -254,10 +441,9 @@ function renderAll() {
   const main = document.getElementById('main-content');
   main.innerHTML = '';
 
-  // Summary
-  const tA = DATA.reduce((s,d)=>s+(d.adm_val||0),0);
-  const tV = DATA.reduce((s,d)=>s+(d.vendas_val||0),0);
-  const tI = DATA.reduce((s,d)=>s+(d.industria_val||0),0);
+  const tA=DATA.reduce((s,d)=>s+(d.adm_val||0),0);
+  const tV=DATA.reduce((s,d)=>s+(d.vendas_val||0),0);
+  const tI=DATA.reduce((s,d)=>s+(d.industria_val||0),0);
 
   const bar = document.createElement('div');
   bar.className = 'summary-bar';
@@ -267,46 +453,32 @@ function renderAll() {
     <div class="sum-item"><div class="sum-label">↳ ADM</div><div class="sum-val adm-c">${brl(tA)}</div></div>
     <div class="sum-item"><div class="sum-label">↳ Vendas</div><div class="sum-val vend-c">${brl(tV)}</div></div>
     <div class="sum-item"><div class="sum-label">↳ Indústria</div><div class="sum-val ind-c">${brl(tI)}</div></div>
-    <div class="sum-meta">
-      Colab: 46 (ADM 4 · Vendas 11 · Ind. 31)<br>
-      m²: 430m² (ADM 50 · Vendas 180 · Ind. 200) · Veículos: 3 (ADM 1 · Vendas 2)
-    </div>`;
+    <div class="sum-meta">Colab: 46 (ADM 4 · Vendas 11 · Ind. 31)<br>m²: 430m² (ADM 50 · Vendas 180 · Ind. 200) · Veículos: 3 (ADM 1 · Vendas 2)</div>`;
   main.appendChild(bar);
 
   DATA.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
-    card.dataset.search = (item.num + ' ' + item.item + ' ' + item.fato).toLowerCase();
+    card.dataset.search = (item.num+' '+item.item+' '+item.fato).toLowerCase();
 
-    const crit = item.criterio || '';
-    const fmtR = v => crit==='%' ? (v*100).toFixed(0)+'%' : crit==='Direto' ? '–' : v;
+    const crit = item.criterio||'';
+    const fmtR = v => crit==='%'?(v*100).toFixed(0)+'%':crit==='Direto'?'–':v;
+    const mM=item.mult===1?' muted':'', mS=item.meses===1?' muted':'', mP=item.parcelas===1?' muted':'';
 
-    // Multiplicador, Meses, Parcelas — always visible; dimmed when = 1
-    const mM = item.mult===1      ? ' muted':'';
-    const mS = item.meses===1     ? ' muted':'';
-    const mP = item.parcelas===1  ? ' muted':'';
+    const BADGE = '<span class="tip-badge">?</span>';
 
-    let lancHTML = '';
-    item.lancamentos.forEach(l => {
-      const rc = 'row-'+l.tipo;
-      const bc = l.tipo==='D'?'badge-D':l.tipo==='C'?'badge-C':'badge-HIST';
-      const vs = l.valor!==null ? brl(l.valor) : '';
-      const va = (l.valor_alt!==null && l.valor_alt!==l.valor)
-               ? `<span class="lanc-val-alt">(${brl(l.valor_alt)})</span>` : '';
-      lancHTML += `<div class="lanc-row ${rc}">
-        <span class="lanc-badge ${bc}">${l.tipo}</span>
-        <span class="lanc-conta">${l.conta}</span>
-        ${l.tipo!=='HIST'?`<span class="lanc-val">${vs}${va}</span>`:''}
-      </div>`;
+    let lancHTML='';
+    item.lancamentos.forEach(l=>{
+      const rc='row-'+l.tipo, bc=l.tipo==='D'?'badge-D':l.tipo==='C'?'badge-C':'badge-HIST';
+      const vs=l.valor!==null?brl(l.valor):'';
+      const va=(l.valor_alt!==null&&l.valor_alt!==l.valor)?`<span class="lanc-val-alt">(${brl(l.valor_alt)})</span>`:'';
+      lancHTML+=`<div class="lanc-row ${rc}"><span class="lanc-badge ${bc}">${l.tipo}</span><span class="lanc-conta">${l.conta}</span>${l.tipo!=='HIST'?`<span class="lanc-val">${vs}${va}</span>`:''}</div>`;
     });
 
     card.innerHTML = `
       <div class="card-header">
         <span class="card-num">#${String(item.num).padStart(2,'0')}</span>
-        <div>
-          <div class="card-title">${item.item}</div>
-          <div class="card-fato">${item.fato}</div>
-        </div>
+        <div><div class="card-title">${item.item}</div><div class="card-fato">${item.fato}</div></div>
       </div>
       <div class="rateio-section">
         <div class="rateio-grid">
@@ -315,66 +487,58 @@ function renderAll() {
           <div class="rg-cell"><div class="rg-label">Multiplicador</div><div class="rg-val${mM}">× ${item.mult}</div></div>
           <div class="rg-cell"><div class="rg-label">Meses</div><div class="rg-val${mS}">${item.meses}</div></div>
           <div class="rg-cell"><div class="rg-label">Parcelas</div><div class="rg-val${mP}">${item.parcelas}×</div></div>
-          <div class="rg-cell"><div class="rg-label">Valor Base</div><div class="rg-val money">${n(item.valor_base)}</div></div>
+          <div class="rg-cell rg-vbase"><div class="rg-label">Valor Base ${BADGE}</div><div class="rg-val money">${n(item.valor_base)}</div></div>
           <div class="rg-cell"><div class="rg-label">Critério</div><div class="rg-val criterio">${crit}</div></div>
           <div class="rg-cell"><div class="rg-label">Rateio ADM</div><div class="rg-val">${fmtR(item.adm_ratio)}</div></div>
           <div class="rg-cell"><div class="rg-label">Rateio Vendas</div><div class="rg-val">${fmtR(item.vendas_ratio)}</div></div>
           <div class="rg-cell"><div class="rg-label">Rateio Ind.</div><div class="rg-val">${fmtR(item.industria_ratio)}</div></div>
         </div>
         <div class="alloc-row">
-          <div class="alloc-cell alloc-adm">
-            <span class="alloc-label">Administração</span>
-            <span class="alloc-val">${brl(item.adm_val)}</span>
-            <div class="calc-tip">${buildTip(item,'adm')}</div>
-          </div>
-          <div class="alloc-cell alloc-vend">
-            <span class="alloc-label">Vendas</span>
-            <span class="alloc-val">${brl(item.vendas_val)}</span>
-            <div class="calc-tip">${buildTip(item,'vend')}</div>
-          </div>
-          <div class="alloc-cell alloc-ind">
-            <span class="alloc-label">Indústria</span>
-            <span class="alloc-val">${brl(item.industria_val)}</span>
-            <div class="calc-tip">${buildTip(item,'ind')}</div>
-          </div>
+          <div class="alloc-cell alloc-adm ac-adm"><span class="alloc-label">Administração ${BADGE}</span><span class="alloc-val">${brl(item.adm_val)}</span></div>
+          <div class="alloc-cell alloc-vend ac-vend"><span class="alloc-label">Vendas ${BADGE}</span><span class="alloc-val">${brl(item.vendas_val)}</span></div>
+          <div class="alloc-cell alloc-ind ac-ind"><span class="alloc-label">Indústria ${BADGE}</span><span class="alloc-val">${brl(item.industria_val)}</span></div>
         </div>
       </div>
       <div class="lanc-section">${lancHTML||'<div class="empty-lanc">Sem lançamentos registrados.</div>'}</div>`;
 
     main.appendChild(card);
+
+    // Attach tooltips after DOM insertion
+    attachTip(card.querySelector('.rg-vbase'), tipValorBase(item));
+    attachTip(card.querySelector('.ac-adm'),   tipAloc(item,'adm'));
+    attachTip(card.querySelector('.ac-vend'),   tipAloc(item,'vend'));
+    attachTip(card.querySelector('.ac-ind'),    tipAloc(item,'ind'));
   });
 }
 
-// ── TOGGLE ────────────────────────────────────────────────────────────────────
-const state = {D:true,C:true,HIST:true,R:true};
-function toggleType(type, btn) {
-  state[type] = !state[type];
-  document.body.classList.toggle('hide-'+type, !state[type]);
-  btn.classList.toggle('off', !state[type]);
+// ── TOGGLE & SEARCH ───────────────────────────────────────────────────────────
+const state={D:true,C:true,HIST:true,R:true};
+function toggleType(type,btn){
+  state[type]=!state[type];
+  document.body.classList.toggle('hide-'+type,!state[type]);
+  btn.classList.toggle('off',!state[type]);
 }
-
-// ── SEARCH ────────────────────────────────────────────────────────────────────
-let stimer = null;
-function handleSearch(val) {
+let stimer=null;
+function handleSearch(val){
   clearTimeout(stimer);
-  stimer = setTimeout(()=>applySearch(val), 120);
-}
-function applySearch(val) {
-  const q = val.trim().toLowerCase();
-  const cards = document.querySelectorAll('.item-card');
-  let vis = 0;
-  cards.forEach(c => {
-    const m = !q || c.dataset.search.includes(q);
-    c.classList.toggle('search-hidden', !m);
-    if(m) vis++;
-  });
-  document.getElementById('search-count').textContent = q ? vis+'/'+DATA.length : '';
-  const noR = document.getElementById('no-results');
-  noR.style.display = (q && vis===0) ? 'block' : 'none';
-  document.getElementById('no-results-term').textContent = val.trim();
+  stimer=setTimeout(()=>{
+    const q=val.trim().toLowerCase();
+    let vis=0;
+    document.querySelectorAll('.item-card').forEach(c=>{
+      const m=!q||c.dataset.search.includes(q);
+      c.classList.toggle('search-hidden',!m);
+      if(m)vis++;
+    });
+    document.getElementById('search-count').textContent=q?vis+'/'+DATA.length:'';
+    const nr=document.getElementById('no-results');
+    nr.style.display=(q&&vis===0)?'block':'none';
+    document.getElementById('no-results-term').textContent=val.trim();
+  },120);
 }
 
 renderAll();
+// Make sure tooltip starts hidden
+gtip.style.display='none';
 </script>
 </body>
 </html>
