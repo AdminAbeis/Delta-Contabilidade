@@ -652,18 +652,33 @@ const DATA = [
       }
     ]
   },
-  {
-    "num":26,"item":"Uniforme","fato":"Uniforme — 4 por colaborador, 2 entregues em fev/2026 — compra a prazo em 24 parcelas",
-    "mes":"foi entregue 2 p/ colab. em fev/2026","valor":5000,"mult":1,"meses":1,"parcelas":24,
+    {
+    "num":26,"item":"Uniforme",
+    "fato":"Uniforme — 4 por colaborador (2 entregues em março/2026) — compra a prazo em 24 parcelas",
+    "mes":"1ª entrega: 2 uniformes p/ colab. em março/2026","valor":5000,"mult":1,"meses":1,"parcelas":1,
     "adm_ratio":4,"vendas_ratio":11,"industria_ratio":31,"tot_dep":46,
-    "valor_base":208.33,"criterio":"Colab",
-    "adm_val":18.12,"vendas_val":49.82,"industria_val":140.4,
-    "lancamentos":[
-      {"tipo":"D","conta":"Despesa com uniformes / departamento Adm","valor":18.12},
-      {"tipo":"D","conta":"Despesa com uniformes / departamento Vendas","valor":49.82},
-      {"tipo":"D","conta":"Produto X (Estoque/Produto em elaboração)","valor":140.4},
-      {"tipo":"C","conta":"Uniformes a apropriar","valor":208.33},
-      {"tipo":"HIST","conta":"Apropriação de uniformes entregues aos colaboradores — fev/2026, conf. NF n°..."}
+    "valor_base":2500,"criterio":"Colab",
+    "adm_val":217.39,"vendas_val":597.83,"industria_val":1684.78,
+    "grupos":[
+      {
+        "label":"1º Lançamento — Fevereiro: Compra a prazo (entrada no estoque)",
+        "lancamentos":[
+          {"tipo":"D","conta":"Uniformes (Estoque / Almoxarifado / Ativo Circulante)","valor":5000},
+          {"tipo":"C","conta":"Fornecedor (Passivo Circulante — 22 parcelas: mar/26 a dez/27)","valor":4583.33},
+          {"tipo":"C","conta":"Fornecedor (Passivo Não Circulante — 2 parcelas: jan/28 a fev/28)","valor":416.67},
+          {"tipo":"HIST","conta":"Compra a prazo de uniformes, conf. NF nº xxx do fornecedor xxx — 24 parcelas de R$ 208,33"}
+        ]
+      },
+      {
+        "label":"2º Lançamento — Março: Entrega de 2 uniformes por colaborador (46 × 2 × R$ 27,17)",
+        "lancamentos":[
+          {"tipo":"D","conta":"Despesa com uniformes / departamento Adm  (4 × 2 × R$ 27,17)","valor":217.39},
+          {"tipo":"D","conta":"Despesa com uniformes / departamento Vendas  (11 × 2 × R$ 27,17)","valor":597.83},
+          {"tipo":"D","conta":"Custo com uniformes / Indústria  (31 × 2 × R$ 27,17)","valor":1684.78},
+          {"tipo":"C","conta":"Estoque / Uniformes","valor":2500},
+          {"tipo":"HIST","conta":"Apropriação dos uniformes entregues (2 por colaborador) — ref. março/2026, conf. NF nº..."}
+        ]
+      }
     ]
   },
   {
