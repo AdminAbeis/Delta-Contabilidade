@@ -248,12 +248,12 @@ const DATA = [
   {
     "num":4,"item":"Combustível","fato":"Combustíveis (sem nº de placa nas notas) pagos a vista com cartão de débito",
     "mes":"28/02/2026","valor":3000,"mult":1,"meses":1,"parcelas":1,
-    "adm_ratio":0.2,"vendas_ratio":0.8,"industria_ratio":0,"tot_dep":1,
+    "adm_ratio":0.3333,"vendas_ratio":0.6667,"industria_ratio":0,"tot_dep":1,
     "valor_base":3000,"criterio":"%",
-    "adm_val":600,"vendas_val":2400,"industria_val":0,
+    "adm_val":1000,"vendas_val":2000,"industria_val":0,
     "lancamentos":[
-      {"tipo":"D","conta":"Despesa com combustível / departamento Adm","valor":600},
-      {"tipo":"D","conta":"Despesa com combustível / departamento Vendas","valor":2400},
+      {"tipo":"D","conta":"Despesa com combustível / departamento Adm  (1/3)","valor":1000},
+      {"tipo":"D","conta":"Despesa com combustível / departamento Vendas  (2/3)","valor":2000},
       {"tipo":"C","conta":"Banco conta movimento","valor":3000},
       {"tipo":"HIST","conta":"Pagamento de combustíveis com cartão de débito Visa, conf NF .."}
     ]
@@ -315,12 +315,12 @@ const DATA = [
   {
     "num":7,"item":"Depreciação","fato":"Depreciação — valor por veículo (3 veículos no total)",
     "mes":"28/02/2026","valor":500,"mult":3,"meses":1,"parcelas":1,
-    "adm_ratio":0.34,"vendas_ratio":0.66,"industria_ratio":0,"tot_dep":1,
+    "adm_ratio":0.3333,"vendas_ratio":0.6667,"industria_ratio":0,"tot_dep":1,
     "valor_base":1500,"criterio":"%",
-    "adm_val":510,"vendas_val":990,"industria_val":0,
+    "adm_val":500,"vendas_val":1000,"industria_val":0,
     "lancamentos":[
-      {"tipo":"D","conta":"Despesa com depreciação / departamento Adm","valor":510},
-      {"tipo":"D","conta":"Despesa com depreciação / departamento Vendas","valor":990},
+      {"tipo":"D","conta":"Despesa com depreciação / departamento Adm  (1/3)","valor":500},
+      {"tipo":"D","conta":"Despesa com depreciação / departamento Vendas  (2/3)","valor":1000},
       {"tipo":"C","conta":"Depreciação acumulada","valor":1500},
       {"tipo":"HIST","conta":"Depreciação de veículos — fev/2026, conf. relatório interno nº X"}
     ]
@@ -370,13 +370,13 @@ const DATA = [
   {
     "num":11,"item":"Honor. Contábeis","fato":"Honorários contábeis, vencimento em março/2026",
     "mes":"28/02/2026","valor":3000,"mult":1,"meses":1,"parcelas":1,
-    "adm_ratio":0.4,"vendas_ratio":0.3,"industria_ratio":0.3,"tot_dep":1,
+    "adm_ratio":0.3333,"vendas_ratio":0.3333,"industria_ratio":0.3333,"tot_dep":1,
     "valor_base":3000,"criterio":"%",
-    "adm_val":1200,"vendas_val":900,"industria_val":900,
+    "adm_val":1000,"vendas_val":1000,"industria_val":1000,
     "lancamentos":[
-      {"tipo":"D","conta":"Honorários contábeis / departamento Adm","valor":1200},
-      {"tipo":"D","conta":"Honorários contábeis / departamento Vendas","valor":900},
-      {"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":900},
+      {"tipo":"D","conta":"Honorários contábeis / departamento Adm  (1/3)","valor":1000},
+      {"tipo":"D","conta":"Honorários contábeis / departamento Vendas  (1/3)","valor":1000},
+      {"tipo":"D","conta":"Produto X (Estoque/Custo)  (1/3)","valor":1000},
       {"tipo":"C","conta":"Honorários contábeis a pagar","valor":3000},
       {"tipo":"HIST","conta":"Provisão de pgt. dos honorários contábeis á ContábileX, conf. NF nX"}
     ]
@@ -435,13 +435,21 @@ const DATA = [
       }
     ]
   },
-  {
+    {
     "num":15,"item":"IPVA",
     "fato":"IPVA — valor por veículo — parcelado em 4 pagamentos, 1º em fevereiro/2026",
     "mes":"todos os meses de 2026","valor":2300,"mult":3,"meses":12,"parcelas":4,
-    "adm_ratio":0.34,"vendas_ratio":0.66,"industria_ratio":0,"tot_dep":1,
-    "valor_base":143.75,"criterio":"%",
-    "adm_val":48.88,"vendas_val":94.88,"industria_val":0,
+    "adm_ratio":0.3333,"vendas_ratio":0.6667,"industria_ratio":0,"tot_dep":1,
+    "valor_base":575,"criterio":"%",
+    "adm_val":191.67,"vendas_val":383.33,"industria_val":0,
+    "vb_override":{
+      "lines":[
+        {"label":"Valor total (3 veículos × R$ 2.300)","val":"R$\u00a06.900,00"},
+        {"label":"Meses de competência","val":"÷ 12"}
+      ],
+      "formula":"6.900,00 ÷ 12",
+      "note":"As 4 parcelas referem-se ao calendário de pagamento do IPVA, não à competência mensal da despesa. Mesma lógica do Seguro Patrimonial.\nAlocação: ADM 1/3 = R$ 191,67 · Vendas 2/3 = R$ 383,33"
+    },
     "grupos":[
       {
         "label":"1º Lançamento — Provisão da 1ª parcela (R$ 6.900 ÷ 4 parcelas)",
@@ -452,11 +460,11 @@ const DATA = [
         ]
       },
       {
-        "label":"2º Lançamento — Apropriação mensal (÷ 12 meses ÷ 4 parcelas)",
+        "label":"2º Lançamento — Apropriação mensal (R$ 6.900 ÷ 12 meses)",
         "lancamentos":[
-          {"tipo":"D","conta":"Despesa com IPVA / departamento Adm","valor":48.88},
-          {"tipo":"D","conta":"Despesa com IPVA / departamento Vendas","valor":94.88},
-          {"tipo":"C","conta":"IPVA a apropriar","valor":143.75},
+          {"tipo":"D","conta":"Despesa com IPVA / departamento Adm  (1/3)","valor":191.67},
+          {"tipo":"D","conta":"Despesa com IPVA / departamento Vendas  (2/3)","valor":383.33},
+          {"tipo":"C","conta":"IPVA a apropriar","valor":575},
           {"tipo":"HIST","conta":"Apropriação mensal do IPVA — conf. guia N x, fevereiro/2026"}
         ]
       }
@@ -482,12 +490,25 @@ const DATA = [
     "adm_ratio":0.6,"vendas_ratio":0.38,"industria_ratio":0.02,"tot_dep":1,
     "valor_base":800,"criterio":"%",
     "adm_val":480,"vendas_val":304,"industria_val":16,
-    "lancamentos":[
-      {"tipo":"D","conta":"Despesa com mat. de escritório (uso e consumo) / departamento Adm","valor":480},
-      {"tipo":"D","conta":"Despesa com mat. de escritório (uso e consumo) / departamento Vendas","valor":304},
-      {"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":16},
-      {"tipo":"C","conta":"Materiais de escritório a pagar","valor":800},
-      {"tipo":"HIST","conta":"Provisão de material de escritório, conf. NF nº X — fornecedor Empresa X"}
+    "grupos":[
+      {
+        "label":"1º Lançamento — Compra (entrada no estoque/almoxarifado)",
+        "lancamentos":[
+          {"tipo":"D","conta":"Estoque / Almoxarifado (Materiais de escritório)","valor":800},
+          {"tipo":"C","conta":"Fornecedor (Materiais de escritório a pagar — 3 parcelas)","valor":800},
+          {"tipo":"HIST","conta":"Aquisição a prazo de materiais de escritório, conf. NF nº X — fornecedor Empresa X"}
+        ]
+      },
+      {
+        "label":"2º Lançamento — Consumo (uso e apropriação por departamento)",
+        "lancamentos":[
+          {"tipo":"D","conta":"Despesa com mat. de escritório (uso e consumo) / departamento Adm","valor":480},
+          {"tipo":"D","conta":"Despesa com mat. de escritório (uso e consumo) / departamento Vendas","valor":304},
+          {"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":16},
+          {"tipo":"C","conta":"Estoque / Almoxarifado (Materiais de escritório)","valor":800},
+          {"tipo":"HIST","conta":"Apropriação do consumo de materiais de escritório por departamento, conf. NF nº X"}
+        ]
+      }
     ]
   },
   {
@@ -587,23 +608,32 @@ const DATA = [
   {
     "num":23,"item":"Salários (Vigilância)","fato":"Salários e reflexos dos dois profissionais da vigilância, a pagar em março/2026",
     "mes":"28/02/2026","valor":5000,"mult":1,"meses":1,"parcelas":1,
-    "adm_ratio":0.34,"vendas_ratio":0.33,"industria_ratio":0.33,"tot_dep":1,
+    "adm_ratio":0.3333,"vendas_ratio":0.3333,"industria_ratio":0.3334,"tot_dep":1,
     "valor_base":5000,"criterio":"%",
-    "adm_val":1700,"vendas_val":1650,"industria_val":1650,
+    "adm_val":1666.67,"vendas_val":1666.67,"industria_val":1666.66,
     "lancamentos":[
-      {"tipo":"D","conta":"Despesa com profissionais de vigilância / departamento Adm","valor":1700},
-      {"tipo":"D","conta":"Despesa com profissionais de vigilância / departamento Vendas","valor":1650},
-      {"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":1650},
+      {"tipo":"D","conta":"Despesa com profissionais de vigilância / departamento Adm  (33,33%)","valor":1666.67},
+      {"tipo":"D","conta":"Despesa com profissionais de vigilância / departamento Vendas  (33,33%)","valor":1666.67},
+      {"tipo":"D","conta":"Produto X (Estoque/Custo)  (33,33%)","valor":1666.66},
       {"tipo":"C","conta":"Salários dos profissionais de vigilância a pagar","valor":5000},
       {"tipo":"HIST","conta":"Provisão de salários e encargos dos profissionais de vigilância — fev/2026, a pagar em março/2026"}
     ]
   },
-  {
-    "num":24,"item":"Seguro Patrimonial","fato":"Seguro patrimonial — apólice em 5 parcelas, 1ª vence em março/2026",
+      {
+    "num":24,"item":"Seguro Patrimonial",
+    "fato":"Seguro patrimonial — apólice em 5 parcelas, 1ª vence em março/2026",
     "mes":"todos os meses de 2026","valor":3000,"mult":1,"meses":12,"parcelas":5,
     "adm_ratio":50,"vendas_ratio":180,"industria_ratio":200,"tot_dep":430,
-    "valor_base":50,"criterio":"m²",
-    "adm_val":5.81,"vendas_val":20.93,"industria_val":23.26,
+    "valor_base":250,"criterio":"m²",
+    "adm_val":29.07,"vendas_val":104.65,"industria_val":116.28,
+    "vb_override":{
+      "lines":[
+        {"label":"Valor Total","val":"R$\u00a03.000,00"},
+        {"label":"Meses de competência","val":"÷ 12"}
+      ],
+      "formula":"3.000,00 ÷ 12",
+      "note":"As 5 parcelas referem-se ao calendário de pagamento do seguro, não à competência da despesa. Despesa mensal = R$ 250,00."
+    },
     "grupos":[
       {
         "label":"1º Lançamento — Provisão da 1ª parcela (R$ 3.000 ÷ 5 parcelas)",
@@ -614,12 +644,12 @@ const DATA = [
         ]
       },
       {
-        "label":"2º Lançamento — Apropriação mensal (÷ 12 meses ÷ 5 parcelas)",
+        "label":"2º Lançamento — Apropriação mensal (R$ 3.000 ÷ 12 meses)",
         "lancamentos":[
-          {"tipo":"D","conta":"Despesa com seguro patrimonial / departamento Adm","valor":5.81},
-          {"tipo":"D","conta":"Despesa com seguro patrimonial / departamento Vendas","valor":20.93},
-          {"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":23.26},
-          {"tipo":"C","conta":"Seguro patrimonial a apropriar","valor":50},
+          {"tipo":"D","conta":"Despesa com seguro patrimonial / departamento Adm","valor":29.07},
+          {"tipo":"D","conta":"Despesa com seguro patrimonial / departamento Vendas","valor":104.65},
+          {"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":116.28},
+          {"tipo":"C","conta":"Seguro patrimonial a apropriar","valor":250},
           {"tipo":"HIST","conta":"Apropriação mensal do seguro patrimonial — conf. boleto X emitido pela EmpresaX"}
         ]
       }
@@ -652,13 +682,22 @@ const DATA = [
       }
     ]
   },
-    {
+      {
     "num":26,"item":"Uniforme",
     "fato":"Uniforme — 4 por colaborador (2 entregues em março/2026) — compra a prazo em 24 parcelas",
     "mes":"1ª entrega: 2 uniformes p/ colab. em março/2026","valor":5000,"mult":1,"meses":1,"parcelas":1,
     "adm_ratio":4,"vendas_ratio":11,"industria_ratio":31,"tot_dep":46,
     "valor_base":2500,"criterio":"Colab",
     "adm_val":217.39,"vendas_val":597.83,"industria_val":1684.78,
+    "vb_override":{
+      "lines":[
+        {"label":"Total colaboradores","val":"46"},
+        {"label":"Uniformes entregues por colab.","val":"× 2"},
+        {"label":"Custo por uniforme  (R$5.000÷184)","val":"× R$\u00a027,17"}
+      ],
+      "formula":"46 × 2 × R$\u00a027,17",
+      "note":"Valor base = custo dos 92 uniformes entregues em março (2 por colaborador). Os outros 92 uniformes permanecem no estoque para entrega futura."
+    },
     "grupos":[
       {
         "label":"1º Lançamento — Fevereiro: Compra a prazo (entrada no estoque)",
@@ -786,9 +825,25 @@ function attachTip(el,html){
 // ── TOOLTIP CONTENT ───────────────────────────────────────────────────────────
 function tipValorBase(item){
   const {valor,mult,meses,parcelas,valor_base}=item;
+  let h=`<div class="tip-title"><span class="tip-icon">📐</span>Como chegou no Valor Base?</div>`;
+
+  // Custom override: when the auto formula (mult/meses/parcelas) doesn't reflect
+  // the actual calculation (e.g. parcelas = payment schedule, not competência period)
+  if(item.vb_override){
+    const ov=item.vb_override;
+    ov.lines.forEach(l=>{
+      h+=`<div class="tip-line"><span class="tip-label">${l.label}</span><span class="tip-val">${l.val}</span></div>`;
+    });
+    h+=`<hr class="tip-divider">
+      <div class="tip-formula">${ov.formula}</div>
+      <div class="tip-result">= ${brl(valor_base)}</div>
+      <div class="tip-note">${ov.note}</div>`;
+    return h;
+  }
+
+  // Auto formula: reconstruct from data fields
   const simple=mult===1&&meses===1&&parcelas===1;
-  let h=`<div class="tip-title"><span class="tip-icon">📐</span>Como chegou no Valor Base?</div>
-    <div class="tip-line"><span class="tip-label">Valor Total</span><span class="tip-val">${brl(valor)}</span></div>`;
+  h+=`<div class="tip-line"><span class="tip-label">Valor Total</span><span class="tip-val">${brl(valor)}</span></div>`;
   if(!simple){
     if(mult>1)     h+=`<div class="tip-line"><span class="tip-label">Multiplicador (qtd.)</span><span class="tip-val">× ${mult}</span></div>`;
     if(meses>1)    h+=`<div class="tip-line"><span class="tip-label">Meses de competência</span><span class="tip-val">÷ ${meses}</span></div>`;
@@ -820,9 +875,13 @@ function tipAloc(item,dept){
   }
   h+=`<div class="tip-line"><span class="tip-label">Valor base</span><span class="tip-val">${brl(base)}</span></div>`;
   if(crit==='%'){
-    const pct=(ratio*100).toFixed(0);
-    h+=`<div class="tip-line"><span class="tip-label">% alocada a ${lbl}</span><span class="tip-val">${pct}%</span></div>
-        <hr class="tip-divider"><div class="tip-formula">${n(base)} × ${pct}%</div>`;
+    const rawPct=ratio*100;
+    let pctLabel;
+    if(Math.abs(rawPct-33.33)<0.02)      pctLabel='33,33%';
+    else if(Math.abs(rawPct-66.67)<0.02) pctLabel='66,67%';
+    else pctLabel=(rawPct%1===0?rawPct.toFixed(0):rawPct.toFixed(0))+'%';
+    h+=`<div class="tip-line"><span class="tip-label">% alocada a ${lbl}</span><span class="tip-val">${pctLabel}</span></div>
+        <hr class="tip-divider"><div class="tip-formula">${n(base)} × ${pctLabel}</div>`;
   } else {
     const unit=crit==='m²'?'m²':'colab.';
     h+=`<div class="tip-line"><span class="tip-label">${lbl} (${unit})</span><span class="tip-val">${ratio}${crit==='m²'?'m²':''}</span></div>
@@ -888,7 +947,16 @@ function renderAll(){
     card.dataset.search=(item.num+' '+item.item+' '+item.fato).toLowerCase();
 
     const crit=item.criterio||'';
-    const fmtR=v=>crit==='%'?(v*100).toFixed(0)+'%':crit==='Direto'?'–':v;
+    const fmtR=v=>{
+      if(crit==='Direto') return '–';
+      if(crit==='%'){
+        const pct=v*100;
+        if(Math.abs(pct-33.33)<0.02) return '33,33%';
+        if(Math.abs(pct-66.67)<0.02) return '66,67%';
+        return (pct%1===0?pct.toFixed(0):pct.toFixed(0))+'%';
+      }
+      return v;
+    };
     const mM=item.mult===1?' muted':'',mS=item.meses===1?' muted':'',mP=item.parcelas===1?' muted':'';
 
     const lancHTML = renderLancamentos(item.lancamentos, item.grupos);
