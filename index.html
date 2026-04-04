@@ -287,16 +287,29 @@ const DATA = [
   },
   {
     "num":6,"item":"Cursos","fato":"Cursos de capacitação — 3 parcelas, 1ª vence em março/2026",
-    "mes":"28/02/2026","valor":2000,"mult":1,"meses":1,"parcelas":3,
+    "mes":"28/02/2026","valor":2000,"mult":1,"meses":1,"parcelas":1,
     "adm_ratio":4,"vendas_ratio":11,"industria_ratio":31,"tot_dep":46,
-    "valor_base":666.67,"criterio":"Colab",
-    "adm_val":57.97,"vendas_val":159.42,"industria_val":449.28,
-    "lancamentos":[
-      {"tipo":"D","conta":"Despesa com curso de capacitação / departamento Adm","valor":57.97},
-      {"tipo":"D","conta":"Despesa com curso de capacitação / departamento Vendas","valor":159.42},
-      {"tipo":"D","conta":"Produto X (Estoque/Produto em elaboração)","valor":449.28},
-      {"tipo":"C","conta":"Curso de capacitação a pagar","valor":666.67},
-      {"tipo":"HIST","conta":"Provisão de pagamento de curso de capacitação, conf. NF n… pela prestação de serviço"}
+    "valor_base":2000,"criterio":"Colab",
+    "adm_val":173.91,"vendas_val":478.26,"industria_val":1347.83,
+    "grupos":[
+      {
+        "label":"1º Lançamento — Competência fevereiro (despesa integral)",
+        "lancamentos":[
+          {"tipo":"D","conta":"Despesa com cursos e capacitações / departamento Adm","valor":173.91},
+          {"tipo":"D","conta":"Despesa com cursos e capacitações / departamento Vendas","valor":478.26},
+          {"tipo":"D","conta":"Produto X (Estoque/Produto em elaboração)","valor":1347.83},
+          {"tipo":"C","conta":"Cursos de capacitação a pagar","valor":2000},
+          {"tipo":"HIST","conta":"Gastos com cursos e palestras, conf. NF nº XXX — pela prestação de serviço"}
+        ]
+      },
+      {
+        "label":"2º Lançamento — Março: pagamento da 1ª parcela (R$ 2.000 ÷ 3)",
+        "lancamentos":[
+          {"tipo":"D","conta":"Cursos de capacitação a pagar","valor":666.67},
+          {"tipo":"C","conta":"Cartão de crédito a pagar — Operadora X","valor":666.67},
+          {"tipo":"HIST","conta":"Pagamento da 1ª parcela de cursos e capacitação, conf. NF nº XXX"}
+        ]
+      }
     ]
   },
   {
@@ -567,7 +580,7 @@ const DATA = [
       {"tipo":"D","conta":"Salário do profissional de limpeza / departamento Adm","valor":232.56},
       {"tipo":"D","conta":"Salário do profissional de limpeza / departamento Vendas","valor":837.21},
       {"tipo":"D","conta":"Produto X (Estoque/Custo)","valor":930.23},
-      {"tipo":"C","conta":"Salários dos profissionais de limpeza a pagar","valor":2000},
+      {"tipo":"C","conta":"Salário do profissional de limpeza a pagar","valor":2000},
       {"tipo":"HIST","conta":"Provisão de salários e encargos do colaborador de limpeza — fev/2026, a pagar em março/2026"}
     ]
   },
