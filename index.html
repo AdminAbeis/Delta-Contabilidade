@@ -133,6 +133,37 @@
   .sum-val.adm-c{color:var(--adm)}.sum-val.vend-c{color:var(--vend)}.sum-val.ind-c{color:var(--ind)}
   .sum-meta{margin-left:auto;font-size:10px;color:#9ca3af;font-style:italic;align-self:center;line-height:1.6}
 
+
+  /* ── THEORY PANEL ── */
+  .theory-section{max-width:1200px;margin:0 auto 0;padding:0 16px}
+  .theory-toggle{display:flex;align-items:center;gap:10px;background:var(--navy);color:white;border:none;border-radius:10px;padding:12px 18px;cursor:pointer;width:100%;font-family:var(--sans);font-size:13px;font-weight:600;letter-spacing:.02em;transition:background .2s;margin-bottom:8px}
+  .theory-toggle:hover{background:#253d5e}
+  .theory-toggle svg{transition:transform .3s;flex-shrink:0}
+  .theory-toggle.open svg{transform:rotate(180deg)}
+  .theory-body{display:none;background:white;border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .theory-body.open{display:block}
+  .theory-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0}
+  .theory-card{padding:16px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .theory-card:last-child{border-right:none}
+  .theory-card h3{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--blue-lt, #dbeafe)}
+  .theory-card ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:5px}
+  .theory-card li{font-size:11.5px;color:var(--navy);line-height:1.5;padding-left:12px;position:relative}
+  .theory-card li::before{content:"•";position:absolute;left:0;color:var(--blue);font-weight:700}
+  .theory-card li ul{margin-top:4px;margin-left:8px}
+  .theory-card li ul li{font-size:11px;color:var(--gray)}
+  .theory-card li ul li::before{color:var(--gray)}
+  .theory-cost{font-family:var(--mono);font-size:11px;line-height:1.9;color:var(--navy)}
+  .theory-cost .plus{color:var(--green)}.theory-cost .minus{color:var(--orange)}.theory-cost .equal{color:var(--blue);font-weight:700}
+  .theory-cost .divider{color:#d1d5db;font-size:10px}
+  .theory-cost .label{color:#6b7280;font-size:10px;margin-left:6px}
+
+  /* ── EXTRA EXERCISE (item 29) ── */
+  .extra-section{max-width:1200px;margin:20px auto 0;padding:0 16px}
+  .extra-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .extra-header h2{font-size:13px;font-weight:700;color:var(--navy);letter-spacing:.02em}
+  .extra-badge{background:#f59e0b;color:white;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:.06em;text-transform:uppercase}
+  .extra-note{font-size:11px;color:var(--gray);font-style:italic;margin-top:2px}
+
   footer{text-align:center;padding:20px;font-size:10px;color:#9ca3af;font-style:italic}
   ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f5f9}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
 </style>
@@ -178,6 +209,144 @@
 </div>
 
 <main id="main-content"></main>
+
+<div class="theory-section">
+  <button class="theory-toggle" onclick="toggleTheory(this)" aria-expanded="false">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 9v5m0-8.5h.01"/></svg>
+    📚 Conceitos e Terminologia — Contabilidade e Análise de Custos
+    <svg style="margin-left:auto" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+  <div class="theory-body">
+    <div class="theory-grid">
+
+      <div class="theory-card">
+        <h3>Apropriação vs Rateio</h3>
+        <ul>
+          <li><strong>Apropriação:</strong> divisão pelo <em>tempo</em> (meses)
+            <ul><li>Exemplo: IPTU pago em jan dividido por 12 meses</li></ul>
+          </li>
+          <li><strong>Rateio (Alocar):</strong> divisão por <em>departamentos</em> / setores
+            <ul><li>Também chamado de Centro de Custos</li></ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="theory-card">
+        <h3>Remuneração</h3>
+        <ul>
+          <li><strong>Pró-Labore</strong> — sócio administrador
+            <ul>
+              <li>Sócio Administrativo 50%
+                <ul><li>+ 20% Distribuição de Lucro</li></ul>
+              </li>
+              <li>Sócio Profissional 50%
+                <ul><li>+ 20% Distribuição de Lucro</li></ul>
+              </li>
+            </ul>
+          </li>
+          <li><strong>Salário</strong> — CLT (funcionário com carteira assinada)</li>
+          <li><strong>Honorário</strong> — Profissional Liberal (autônomo / PJ)</li>
+        </ul>
+      </div>
+
+      <div class="theory-card">
+        <h3>Custo da Compra</h3>
+        <div class="theory-cost">
+          <div><span class="equal">  Valor do Produto</span></div>
+          <div><span class="plus">+</span> Embalagem</div>
+          <div><span class="plus">+</span> Frete</div>
+          <div><span class="plus">+</span> Seguro</div>
+          <div><span class="plus">+</span> Pedágio</div>
+          <div><span class="plus">+</span> Chapa</div>
+          <div><span class="divider">────────────────</span></div>
+          <div><span class="minus">(−)</span> ICMS</div>
+          <div><span class="divider">────────────────</span></div>
+          <div><span class="equal">= Base PIS/COFINS</span></div>
+          <div><span class="minus">(−)</span> PIS</div>
+          <div><span class="minus">(−)</span> COFINS</div>
+          <div><span class="plus">(+)</span> IPI</div>
+          <div><span class="divider">────────────────</span></div>
+          <div><span class="equal">= Custo da Compra</span></div>
+        </div>
+      </div>
+
+      <div class="theory-card">
+        <h3>Provisão vs Estimativa</h3>
+        <ul>
+          <li><strong>Provisão</strong>
+            <ul>
+              <li>A pagar ou a recolher</li>
+              <li>Certeza do valor (conhecido ou calculável)</li>
+            </ul>
+          </li>
+          <li><strong>Estimativa</strong>
+            <ul>
+              <li>Perda que precisa de confirmação futura</li>
+              <li>Exemplo: perdas com ações judiciais</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="theory-card">
+        <h3>Estoque</h3>
+        <ul>
+          <li>Bens Materiais</li>
+          <li>Matéria-prima para uso na indústria</li>
+          <li>Mercadorias para revenda</li>
+          <li>Produtos em processo de fabricação</li>
+          <li>Produtos acabados</li>
+          <li><strong>Almoxarifado</strong>
+            <ul><li>Produtos / Mercadorias para uso ou consumo</li></ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="theory-card">
+        <h3>Ativo Circulante / Não Circulante — Despesas a Apropriar</h3>
+        <ul>
+          <li><strong>A Apropriar</strong> = Bens / Direitos / Intangíveis contratados antecipadamente
+            <ul><li>"Contratos / Exigências legais"</li></ul>
+          </li>
+          <li><strong>Ativo Circulante:</strong> realizável até o fim do <em>próximo exercício social</em> (31/12 do próximo ano)</li>
+          <li><strong>Ativo Não Circulante:</strong> o que ultrapassa esse limite</li>
+          <li style="margin-top:4px;color:var(--blue);font-size:11px"><em>Exemplo: contrato assinado em abr/2026 por 36 meses → AC = 21 meses (abr/26–dez/27) · ANC = 15 meses (jan/28–mar/29)</em></li>
+        </ul>
+      </div>
+
+      <div class="theory-card">
+        <h3>Gastos — Classificação</h3>
+        <ul>
+          <li><strong>Investimento</strong>
+            <ul><li>Imobilizado (ativos de longa duração)</li></ul>
+          </li>
+          <li><strong>Estoque / Custo</strong>
+            <ul><li>Matéria-prima, insumos diretos da produção</li></ul>
+          </li>
+          <li><strong>Despesas</strong>
+            <ul><li>Gastos administrativos, comerciais, financeiros</li></ul>
+          </li>
+          <li><strong>Custos / DRE</strong>
+            <ul><li>Custos dos produtos vendidos ou serviços prestados</li></ul>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="extra-section">
+  <div class="extra-header">
+    <div>
+      <h2>Exercício Complementar — Propaganda RPC (08/04/2026)</h2>
+      <div class="extra-note">Fato contábil distinto — competência: abril/2026 a março/2029 · Não integra o exercício principal de fev/2026</div>
+    </div>
+    <span class="extra-badge">Novo Fato</span>
+  </div>
+  <div id="extra-content"></div>
+</div>
+
 <div class="no-results" id="no-results">
   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
   Nenhum resultado para "<span id="no-results-term"></span>"
@@ -1031,7 +1200,92 @@ function clearSearch(){
   inp.focus();
 }
 
+
+// ── EXTRA EXERCISE — Item 29 ──────────────────────────────────────────────────
+const DATA_29 = {
+    "num":29,
+    "item":"Propaganda (RPC)",
+    "fato":"Assinatura de contrato de propaganda c/ a RPC — R$ 36.000,00 para propaganda mensal por 36 meses a partir de abril/2026",
+    "mes":"Competência: abril/2026 a março/2029","valor":36000,"mult":1,"meses":36,"parcelas":36,
+    "adm_ratio":0,"vendas_ratio":1,"industria_ratio":0,"tot_dep":1,
+    "valor_base":1000,"criterio":"Direto",
+    "adm_val":0,"vendas_val":1000,"industria_val":0,
+    "vb_override":{
+      "lines":[
+        {"label":"Valor total do contrato","val":"R$\u00a036.000,00"},
+        {"label":"Meses de competência (36 meses)","val":"÷ 36"}
+      ],
+      "formula":"36.000,00 ÷ 36",
+      "note":"Despesa mensal de propaganda: R$ 1.000,00/mês. Alocada integralmente a Vendas (despesa comercial direta)."
+    },
+    "grupos":[
+      {
+        "label":"1º Lançamento — 08/04/2026: Assinatura do contrato (propaganda a apropriar)",
+        "lancamentos":[
+          {"tipo":"D","conta":"Propaganda a apropriar (Despesas de exercícios seguintes — Ativo Circulante: abr/26 a dez/27 = 21 meses)","valor":21000},
+          {"tipo":"D","conta":"Propaganda a apropriar (Despesas de exercícios seguintes — Ativo Não Circulante: jan/28 a mar/29 = 15 meses)","valor":15000},
+          {"tipo":"C","conta":"Banco conta movimento (1ª parcela paga no ato da assinatura)","valor":1000},
+          {"tipo":"C","conta":"Fornecedor / RPC (Passivo Circulante — parcelas 2 a 21: mai/26 a dez/27)","valor":20000},
+          {"tipo":"C","conta":"Fornecedor / RPC (Passivo Não Circulante — parcelas 22 a 36: jan/28 a mar/29)","valor":15000},
+          {"tipo":"HIST","conta":"Assinatura de contrato de propaganda c/ RPC — 36 parcelas de R$ 1.000,00, 1ª paga no ato, conf. contrato nº xxx"}
+        ]
+      },
+      {
+        "label":"2º Lançamento — Apropriação mensal (abril/2026 em diante)",
+        "lancamentos":[
+          {"tipo":"D","conta":"Despesa com propaganda / departamento Vendas","valor":1000},
+          {"tipo":"C","conta":"Propaganda a apropriar","valor":1000},
+          {"tipo":"HIST","conta":"Apropriação mensal da despesa com propaganda — RPC, ref. mês de competência"}
+        ]
+      }
+    ]
+  };
+
+function renderExtra() {
+  const wrap = document.getElementById('extra-content');
+  if (!wrap) return;
+  const item = DATA_29;
+  const BADGE = '<span class="tip-badge">?</span>';
+  const lancHTML = renderLancamentos(item.lancamentos, item.grupos);
+  const card = document.createElement('div');
+  card.className = 'item-card';
+  card.innerHTML = `
+    <div class="card-header">
+      <span class="card-num">#${String(item.num).padStart(2,'0')}</span>
+      <div><div class="card-title">${item.item}</div><div class="card-fato">${item.fato}</div></div>
+    </div>
+    <div class="rateio-section">
+      <div class="rateio-grid">
+        <div class="rg-cell"><div class="rg-label">Competência</div><div class="rg-val mes">${item.mes}</div></div>
+        <div class="rg-cell"><div class="rg-label">Valor Total</div><div class="rg-val money">${n(item.valor)}</div></div>
+        <div class="rg-cell"><div class="rg-label">Meses</div><div class="rg-val">${item.meses}</div></div>
+        <div class="rg-cell"><div class="rg-label">Parcelas</div><div class="rg-val">${item.parcelas}×</div></div>
+        <div class="rg-cell rg-vbase-29"><div class="rg-label">Valor Base ${BADGE}</div><div class="rg-val money">${n(item.valor_base)}</div></div>
+        <div class="rg-cell"><div class="rg-label">Critério</div><div class="rg-val criterio">${item.criterio}</div></div>
+      </div>
+      <div class="alloc-row">
+        <div class="alloc-cell alloc-adm ac29-adm"><span class="alloc-label">Administração ${BADGE}</span><span class="alloc-val">${brl(item.adm_val)}</span></div>
+        <div class="alloc-cell alloc-vend ac29-vend"><span class="alloc-label">Vendas ${BADGE}</span><span class="alloc-val">${brl(item.vendas_val)}</span></div>
+        <div class="alloc-cell alloc-ind ac29-ind"><span class="alloc-label">Indústria ${BADGE}</span><span class="alloc-val">${brl(item.industria_val)}</span></div>
+      </div>
+    </div>
+    <div class="lanc-section">${lancHTML}</div>`;
+  wrap.appendChild(card);
+  attachTip(card.querySelector('.rg-vbase-29'), tipValorBase(item));
+  attachTip(card.querySelector('.ac29-adm'),    tipAloc(item,'adm'));
+  attachTip(card.querySelector('.ac29-vend'),   tipAloc(item,'vend'));
+  attachTip(card.querySelector('.ac29-ind'),    tipAloc(item,'ind'));
+}
+
+function toggleTheory(btn) {
+  btn.classList.toggle('open');
+  const body = btn.nextElementSibling;
+  body.classList.toggle('open');
+  btn.setAttribute('aria-expanded', body.classList.contains('open'));
+}
+
 renderAll();
+renderExtra();
 gtip.style.display='none';
 </script>
 </body>
